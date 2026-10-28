@@ -189,9 +189,11 @@ deployed from the CLI:
 npx vercel --prod
 ```
 
-`REACT_APP_API_URL` and `REACT_APP_IMAGE_BASE_URL` are stored as **Production** environment
-variables in the Vercel project settings; they are not read from `.env` during a hosted build.
-A `Preview` environment value was not configured because preview builds require a Git connection.
+`REACT_APP_API_URL` and `REACT_APP_IMAGE_BASE_URL` are stored as **Production** and **Development**
+environment variables in the Vercel project settings; they are not read from `.env` during a hosted
+build. A `Preview` environment value was not configured because preview builds require a Git
+connection. Because `REACT_APP_*` values are inlined at build time, changing one requires a
+redeploy.
 
 The `vercel.json` at the project root rewrites every non-asset path to `/index.html` so
 client-side routes such as `/doctors/123` resolve on a hard refresh.
