@@ -1,0 +1,67 @@
+name: Shared UI drift check
+
+# This portal vendors files from github.com/AlaaEbrahim0/nexus-shared-ui at the
+# commit pinned in .shared-ui.json. This job fails if a vendored file is edited
+# in place instead of upstream, or if the copies fall behind the pin.
+#
+# It deliberately installs no dependencies: scripts/shared-ui-sync.mjs uses only
+# Node built-ins and git, so `npm ci` would add minutes and let an unrelated
+# lockfile problem turn this check red. The pinned repo is public, so no secret
+# or token is needed.
+#
+# Node 24 matches the doctor portal's declared engine so both drift checks run
+# on the same runtime; this repo sets no "engines" field of its own.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.shared-ui.json'
+      - 'scripts/shared-ui-sync.mjs'
+      - 'tailwind.config.js'
+      - 'src/index.css'
+      - 'src/api/**'
+      - 'src/auth/**'
+      - 'src/context/notificationsContext.js'
+      - 'src/hooks/useChatHub.js'
+      - 'src/utils/utcToRelativeTime.js'
+      - 'src/components/ui/**'
+      - '.github/workflows/shared-ui-drift.yml'
+  pull_request:
+    paths:
+      - '.shared-ui.json'
+      - 'scripts/shared-ui-sync.mjs'
+      - 'tailwind.config.js'
+      - 'src/index.css'
+      - 'src/api/**'
+      - 'src/auth/**'
+      - 'src/context/notificationsContext.js'
+      - 'src/hooks/useChatHub.js'
+      - 'src/utils/utcToRelativeTime.js'
+      - 'src/components/ui/**'
+      - '.github/workflows/shared-ui-drift.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shared-ui-drift-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Vendored files match the pinned shared-ui commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Show the pin under test
+        run: cat .shared-ui.json
+
+      - name: shared-ui:check
+        run: npm run shared-ui:check
