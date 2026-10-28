@@ -122,7 +122,12 @@ hub URL, so the trimming is intentional and should be kept.
 
 ## Shared UI
 
-This portal vendors **22 files** from [nexus-shared-ui](https://github.com/AlaaEbrahim0/nexus-shared-ui): `tailwind.config.js`, `src/index.css`, the UI primitives and community components under `src/components/ui/`, the Axios client, auth/session helpers, `notificationsContext`, `profileUtils`, `useChatHub`, and `convertUtcToRelativeTime`.
+This portal vendors **23 files** from [nexus-shared-ui](https://github.com/AlaaEbrahim0/nexus-shared-ui): `tailwind.config.js`, `src/index.css`, the UI primitives under `src/components/ui/` (plus the explicit `ui/community.js` entry), the Axios client, auth/session helpers, `notificationsContext`, `profileUtils`, `useChatHub`, and `convertUtcToRelativeTime`.
+
+`src/components/ui/index.js` re-exports only the primitives. The community components are reached
+through `src/components/ui/community.js` or by direct path, because they import `react-markdown`
+(ESM only) and Create React App's Jest cannot transform `node_modules` — pulling them into the
+primitives entry point breaks every test that imports `"../ui"`.
 
 Vendoring rather than a `node_modules` import is a constraint of the stack, not a shortcut: `react-scripts` transpiles JSX only under this app's `src/`, so raw-JSX sources installed from Git would fail the build. The pinned upstream commit lives in `.shared-ui.json`.
 
@@ -172,8 +177,15 @@ src/
 | `npm run build` | Production build in `build/` |
 | `npm run shared-ui:sync` | Copy the pinned `@nexus/shared-ui` files into this portal |
 | `npm run shared-ui:check` | Fail if a vendored file has drifted from the pinned upstream |
+| `npm test` | Run the Jest suite bundled with `react-scripts` (single run when `CI=true`) |
 
-This portal has no automated test suite — `npm test` is not defined.
+The suite covers credential-free logic in `src/utils/chat.js`: room permissions
+(`canDeleteChatMessage`, `canReportChatMessage`, `canManageChatMemberRole`, `canModerateRoom`),
+optimistic/server message merging, and the room-event merges that must not import another user's
+role or message content. No test framework was added — `react-scripts` ships Jest, and the tests
+assert plain functions, so no DOM library is required. `src/setupTests.js` no longer imports
+`@testing-library/jest-dom` (that package is not a dependency here, and the scaffolded import made
+every suite fail to start).
 
 ---
 
@@ -209,7 +221,9 @@ rollback.
 - The whole signed-in area requires a token **and** the `user` role; unauthenticated or wrongly-roled visitors are redirected to `/login`.
 - Booking requires an authenticated session.
 - The chatbot is a third-party Chatbase embed with a fixed `chatbotId` in `public/index.html`; it is not configurable by environment variable.
-- No automated tests in this repository.
+- Unit coverage exists for chat permission and merging logic only. Sign-in, booking, chat, and
+  payment flows have **not** been exercised end to end in a browser, and the portal has no
+  component-level tests.
 - Vercel Git integration is not enabled, so deployments are manual (see above).
 
 ---
