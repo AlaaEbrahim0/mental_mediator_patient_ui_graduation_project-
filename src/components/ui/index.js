@@ -10,17 +10,18 @@
 
 export {
     Alert,
-    Avatar,
     Badge,
     Button,
     Card,
     ConfirmDialog,
     ErrorState,
     EmptyState,
+    Field,
     Input,
     Modal,
     Select,
     Skeleton,
+    SkeletonText,
     Spinner,
     Textarea,
 } from "./primitives";
@@ -34,5 +35,5 @@ export { CustomDeletionModal } from "./CustomDeletionModal";
 export { CustomToast } from "./CustomToast";
 export { FilterationComponent } from "./FilterationComponent";
 export { Notification } from "./Notification";
-export { NotificationList } from "./NotificationList";
+export { NotificationsList } from "./NotificationList";
 export { PostSkeleton } from "./PostSkeleton";
