@@ -22,6 +22,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "test": "react-scripts test",
     "shared-ui:sync": "node scripts/shared-ui-sync.mjs",
     "shared-ui:check": "node scripts/shared-ui-sync.mjs check"
   },
