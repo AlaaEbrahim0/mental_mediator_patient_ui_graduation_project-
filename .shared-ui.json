@@ -1,0 +1,29 @@
+{
+  "repo": "https://github.com/AlaaEbrahim0/nexus-shared-ui.git",
+  "ref": "88c1e5015e200d09a0a911764442bd8ee3358aad",
+  "version": "0.1.0",
+  "files": [
+    "tailwind.config.js",
+    "src/index.css",
+    "src/api/client.js",
+    "src/auth/authProvider.js",
+    "src/auth/session.js",
+    "src/context/notificationsContext.js",
+    "src/hooks/useChatHub.js",
+    "src/utils/utcToRelativeTime.js",
+    "src/components/profile/profileUtils.js",
+    "src/components/ui/Comment.js",
+    "src/components/ui/CreatePostModal.js",
+    "src/components/ui/CustomDeletionModal.js",
+    "src/components/ui/CustomToast.js",
+    "src/components/ui/FilterationComponent.js",
+    "src/components/ui/Notification.js",
+    "src/components/ui/NotificationList.js",
+    "src/components/ui/Post.js",
+    "src/components/ui/PostSkeleton.js",
+    "src/components/ui/Reply.js",
+    "src/components/ui/UpdatePostModal.js",
+    "src/components/ui/index.js",
+    "src/components/ui/primitives.js"
+  ]
+}

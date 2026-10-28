@@ -5,7 +5,7 @@
  * the doctor and patient portals.
  *
  * Canonical source: https://github.com/AlaaEbrahim0/nexus-shared-ui
- * Keep this file in sync with shared-ui when updating components.
+ * Vendored into each portal by scripts/shared-ui-sync.mjs — edit here, never in a portal.
  */
 
 export {
