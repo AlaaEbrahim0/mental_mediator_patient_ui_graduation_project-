@@ -1,0 +1,149 @@
+import { useCallback, useState } from "react";
+import toast from "react-hot-toast";
+import apiClient from "./client";
+
+const unwrap = (request) => request.then((response) => response.data).catch((error) => { throw error.response?.data || error; });
+
+export const getPosts = (pageNumber = 1, pageSize = 20, filters = {}) => unwrap(apiClient.get("/api/posts", {
+    params: {
+        pageNumber,
+        pageSize,
+        title: filters.title,
+        content: filters.content,
+        username: filters.username,
+        startTime: filters.from || "0001-01-01",
+        endTime: filters.to || "0001-01-01",
+        confessionsOnly: filters.showConfessions,
+    },
+}));
+export const getPostById = (id) => unwrap(apiClient.get(`/api/posts/${id}`));
+export const createPost = (title, content, postPhoto, category, tags) => {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", content);
+    if (category) formData.append("category", category);
+    if (tags) formData.append("tags", tags);
+    if (postPhoto) formData.append("photoPost", postPhoto);
+    return unwrap(apiClient.post("/api/posts", formData));
+};
+export const updatePost = (id, title, content, postPhoto, category, tags) => {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", content);
+    if (category) formData.append("category", category);
+    if (tags) formData.append("tags", tags);
+    return unwrap(apiClient.put(`/api/posts/${id}`, formData));
+};
+export const deletePost = (id) => unwrap(apiClient.delete(`/api/posts/${id}`));
+export const setPostLike = (id, liked) => unwrap(liked ? apiClient.put(`/api/posts/${id}/like`) : apiClient.delete(`/api/posts/${id}/like`));
+export const getComments = (postId) => unwrap(apiClient.get(`/api/posts/${postId}/comments`));
+export const createComment = (postId, content) => unwrap(apiClient.post(`/api/posts/${postId}/comments`, { content }));
+export const updateComment = (postId, commentId, content) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}`, { content }));
+export const deleteComment = (postId, commentId) => unwrap(apiClient.delete(`/api/posts/${postId}/comments/${commentId}`));
+export const getReplies = (postId, commentId) => unwrap(apiClient.get(`/api/posts/${postId}/comments/${commentId}/replies`));
+export const createReply = (postId, commentId, content) => unwrap(apiClient.post(`/api/posts/${postId}/comments/${commentId}/replies`, { content }));
+export const updateReply = (postId, commentId, replyId, content) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, { content }));
+export const deleteReply = (postId, commentId, replyId) => unwrap(apiClient.delete(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`));
+export const getNewsArticles = () => unwrap(apiClient.get("/api/articles"));
+
+function useRequest({ initialData = null, appendPages = false, onSuccess } = {}) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [data, setData] = useState(initialData);
+    const execute = useCallback(async (request, ...args) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const result = await request(...args);
+            setData((previous) => appendPages ? (args[0] === 1 ? result : [...(previous || []), ...result]) : result);
+            onSuccess?.(result);
+            return result;
+        } catch (requestError) {
+            setError(requestError);
+            throw requestError;
+        } finally {
+            setIsLoading(false);
+        }
+    }, [appendPages, onSuccess]);
+    return { isLoading, error, data, setData, execute };
+}
+
+export function useGetPosts() {
+    const { execute: run, setData, ...requestState } = useRequest({ initialData: [], appendPages: true });
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const execute = useCallback(async (pageNumber = 1, pageSize = 20, filters = {}) => {
+        const posts = await run(getPosts, pageNumber, pageSize, filters);
+        setPage(pageNumber);
+        setHasMore(posts.length === pageSize);
+        return posts;
+    }, [run]);
+    const reset = useCallback(() => { setData([]); setPage(1); setHasMore(true); }, [setData]);
+    return { ...requestState, setData, page, hasMore, execute, reset };
+}
+
+function useEndpoint(request, initialData) {
+    const { execute: run, ...requestState } = useRequest({ initialData });
+    const execute = useCallback((...args) => run(request, ...args), [run, request]);
+    return { ...requestState, execute };
+}
+
+export function useGetPostById() {
+    return useEndpoint(getPostById, []);
+}
+
+export function useCreatePost() {
+    return useEndpoint(createPost);
+}
+
+export function useUpdatePost() {
+    return useEndpoint(updatePost);
+}
+
+export function useDeletePost() {
+    return useEndpoint(deletePost);
+}
+
+export function useGetComments() {
+    return useEndpoint(getComments, []);
+}
+
+export function useCreateComment() {
+    return useEndpoint(createComment);
+}
+
+export function useUpdateComment() {
+    return useEndpoint(updateComment);
+}
+
+export function useDeleteComment() {
+    const { execute: run, ...requestState } = useRequest();
+    const execute = useCallback(async (...args) => {
+        const result = await run(deleteComment, ...args);
+        toast.success("Comment has been deleted successfully");
+        return result;
+    }, [run]);
+    return { ...requestState, execute };
+}
+
+export function useGetReplies() {
+    return useEndpoint(getReplies, []);
+}
+
+export function useCreateReply() {
+    return useEndpoint(createReply);
+}
+
+export function useUpdateReply() {
+    return useEndpoint(updateReply);
+}
+
+export function useDeleteReply() {
+    return useEndpoint(deleteReply, []);
+}
+
+export function useGetNews() {
+    const { execute: run, data: news, ...requestState } = useRequest();
+    const execute = useCallback(async () => run(getNewsArticles), [run]);
+    return { ...requestState, news, execute };
+}
