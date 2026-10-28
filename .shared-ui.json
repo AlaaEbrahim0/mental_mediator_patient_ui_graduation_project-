@@ -1,6 +1,6 @@
 {
   "repo": "https://github.com/AlaaEbrahim0/nexus-shared-ui.git",
-  "ref": "88c1e5015e200d09a0a911764442bd8ee3358aad",
+  "ref": "8b86f523e272858abe88d9a64d2b0883ae6a81ce",
   "version": "0.1.0",
   "files": [
     "tailwind.config.js",
@@ -13,6 +13,7 @@
     "src/utils/utcToRelativeTime.js",
     "src/components/profile/profileUtils.js",
     "src/components/ui/Comment.js",
+    "src/components/ui/community.js",
     "src/components/ui/CreatePostModal.js",
     "src/components/ui/CustomDeletionModal.js",
     "src/components/ui/CustomToast.js",
