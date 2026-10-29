@@ -208,6 +208,36 @@ export const mergeRoomArchiveEvent = (room, event) => {
     };
 };
 
+/**
+ * RoomUpdated follows a lock, unlock, privacy, schedule or cover change. The
+ * payload is one snapshot built for the moderator who made the change, so it
+ * must not overwrite what is specific to the viewer: membership, role, the
+ * member id the composer uses, or the message preview of a room the viewer
+ * may not read. Description is never copied either: the redaction rule
+ * depends on who is asking, and a member-facing broadcast is not a safe
+ * source for it.
+ */
+export const mergeRoomUpdateEvent = (room, event) => {
+    if (!room || !event) return room;
+
+    return {
+        ...room,
+        name: event.name ?? room.name,
+        visibility: event.visibility ?? room.visibility,
+        isPrivate: event.isPrivate ?? room.isPrivate,
+        requiresPassword: event.requiresPassword ?? room.requiresPassword,
+        isLocked: event.isLocked ?? room.isLocked,
+        isArchived: event.isArchived ?? room.isArchived,
+        coverImageUrl: event.coverImageUrl !== undefined ? event.coverImageUrl : room.coverImageUrl,
+        scheduledStartAtUtc: event.scheduledStartAtUtc !== undefined
+            ? event.scheduledStartAtUtc
+            : room.scheduledStartAtUtc,
+        memberCount: event.memberCount ?? room.memberCount,
+        ownerDisplayName: event.ownerDisplayName ?? room.ownerDisplayName,
+        ownerIsDoctor: event.ownerIsDoctor ?? room.ownerIsDoctor,
+    };
+};
+
 const timestampFormatter = new Intl.DateTimeFormat(undefined, {
     month: "short",
     day: "numeric",

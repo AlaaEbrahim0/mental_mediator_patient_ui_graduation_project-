@@ -31,8 +31,22 @@ export const getChatRoom = (roomId) =>
 export const createChatRoom = (payload) =>
     request(apiClient.post("/api/chat/rooms", payload));
 
-export const joinChatRoom = (roomId) =>
-    request(apiClient.post(`/api/chat/rooms/${roomId}/join`));
+// The join body is optional on the server: a room without a passphrase accepts
+// an empty POST, so a body is only sent when a passphrase was collected.
+//
+// The failure carries the mapped copy because the join modal is shared and has
+// no access to this portal's error table; without it the modal would print the
+// server's own detail sentence.
+export const joinChatRoom = async (roomId, passphrase) => {
+    try {
+        return await request(apiClient.post(
+            `/api/chat/rooms/${roomId}/join`,
+            passphrase ? { passphrase } : undefined));
+    } catch (error) {
+        error.friendlyMessage = getChatErrorMessage(error);
+        throw error;
+    }
+};
 
 // POST /leave answers 204 No Content, so there is no body to unwrap and the
 // resolved value is undefined. That is a success, not a missing response.
@@ -71,6 +85,43 @@ export const updateChatMemberRole = (roomId, memberId, role) =>
 export const archiveChatRoom = (roomId) =>
     request(apiClient.post(`/api/chat/rooms/${roomId}/archive`));
 
+export const browseChatRooms = (params) =>
+    request(apiClient.get("/api/chat/rooms/browse", { params }));
+
+export const updateChatRoom = (roomId, payload) =>
+    request(apiClient.patch(`/api/chat/rooms/${roomId}`, payload));
+
+export const lockChatRoom = (roomId) =>
+    request(apiClient.post(`/api/chat/rooms/${roomId}/lock`));
+
+export const unlockChatRoom = (roomId) =>
+    request(apiClient.post(`/api/chat/rooms/${roomId}/unlock`));
+
+export const updateChatRoomPrivacy = (roomId, visibility) =>
+    request(apiClient.put(`/api/chat/rooms/${roomId}/privacy`, { visibility }));
+
+export const setChatRoomPassphrase = (roomId, passphrase) =>
+    request(apiClient.put(`/api/chat/rooms/${roomId}/passphrase`, { passphrase }));
+
+// DELETE /passphrase answers 204; there is no room body to unwrap.
+export const clearChatRoomPassphrase = (roomId) =>
+    apiClient.delete(`/api/chat/rooms/${roomId}/passphrase`).then(() => undefined);
+
+export const updateChatRoomSchedule = (roomId, scheduledStartAtUtc) =>
+    request(apiClient.put(`/api/chat/rooms/${roomId}/scheduled`, { scheduledStartAtUtc }));
+
+// The server binds the file from a form field named "image"; the field name is
+// part of the API contract. The content type is left to the browser so the
+// multipart boundary is generated correctly.
+export const uploadChatRoomCover = (roomId, file) => {
+    const form = new FormData();
+    form.append("image", file);
+    return request(apiClient.put(`/api/chat/rooms/${roomId}/cover`, form));
+};
+
+export const removeChatRoomCover = (roomId) =>
+    request(apiClient.delete(`/api/chat/rooms/${roomId}/cover`));
+
 /**
  * Read the machine readable code out of an RFC 7807 chat problem body.
  *
@@ -102,6 +153,20 @@ export const getChatErrorMessage = (error, fallback = "Something went wrong. Ple
             return "The safety check didn't finish - it can be slow to start after a quiet period - so your message was not sent. It was not rejected. Try again in a moment.";
         case "Chat.RoomArchived":
             return "This room has been archived and no longer accepts new activity.";
+        case "Chat.RoomLocked":
+            return "This room is paused. You can read, but nobody can post or join until a moderator resumes it.";
+        case "Chat.RoomPassphraseRequired":
+            return "This room needs a password to join.";
+        case "Chat.RoomPassphraseIncorrect":
+            return "Incorrect room password. Try again.";
+        case "Chat.InvalidRoomPassphrase":
+            return "Room passwords must be 8 to 128 characters and cannot contain control characters.";
+        case "Chat.InvalidScheduledStart":
+            return "Pick a start time in the future, no more than 90 days ahead.";
+        case "Chat.InvalidRoomCover":
+            return "Choose an image file for the room cover.";
+        case "Chat.CreateRoomForbidden":
+            return "Your account cannot create rooms.";
         case "Chat.OwnerCannotLeave":
             return "The room owner cannot leave. Archive the room instead.";
         case "Chat.ReportAlreadyExists":
@@ -312,6 +377,72 @@ export function useChatRooms() {
         refresh: load,
         loadMore,
     };
+}
+
+/**
+ * The paged room directory behind the rooms page.
+ *
+ * Browse is offset-paged because a sorted, filtered list has no stable cursor.
+ * "Load more" reuses the filters of the page it extends, so a filter change
+ * mid-paging cannot splice pages from two different result sets; the request
+ * sequence number keeps a slow page from overwriting a newer filter.
+ */
+export function useChatRoomBrowse(pageSize = 12) {
+    const [rooms, setRooms] = useState([]);
+    const [totalCount, setTotalCount] = useState(0);
+    const [hasMore, setHasMore] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const pageRef = useRef(1);
+    const queryRef = useRef({ search: "", tab: "All", sort: "Recent" });
+    const requestIdRef = useRef(0);
+
+    const load = useCallback(async ({
+        search = "",
+        tab = "All",
+        sort = "Recent",
+        append = false,
+    } = {}) => {
+        const requestId = requestIdRef.current + 1;
+        requestIdRef.current = requestId;
+
+        const query = append ? queryRef.current : { search, tab, sort };
+        queryRef.current = query;
+        const pageNumber = append ? pageRef.current + 1 : 1;
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const result = await browseChatRooms({
+                search: query.search || undefined,
+                tab: query.tab,
+                sort: query.sort,
+                pageNumber,
+                pageSize,
+            });
+            if (requestIdRef.current !== requestId) return null;
+
+            const pageRooms = result?.rooms || [];
+            pageRef.current = pageNumber;
+            setRooms((previous) => (append ? [...previous, ...pageRooms] : pageRooms));
+            setTotalCount(result?.totalCount || 0);
+            setHasMore(Boolean(result?.hasMore));
+
+            return result;
+        } catch (requestError) {
+            if (requestIdRef.current === requestId) {
+                setError(requestError);
+            }
+            throw requestError;
+        } finally {
+            if (requestIdRef.current === requestId) {
+                setIsLoading(false);
+            }
+        }
+    }, [pageSize]);
+
+    return { rooms, totalCount, hasMore, isLoading, error, load };
 }
 
 /**
@@ -824,4 +955,40 @@ export function useUpdateChatMemberRole() {
 
 export function useArchiveChatRoom() {
     return useAsyncAction(archiveChatRoom);
+}
+
+export function useUpdateChatRoom() {
+    return useAsyncAction(updateChatRoom);
+}
+
+export function useLockChatRoom() {
+    return useAsyncAction(lockChatRoom);
+}
+
+export function useUnlockChatRoom() {
+    return useAsyncAction(unlockChatRoom);
+}
+
+export function useUpdateChatRoomPrivacy() {
+    return useAsyncAction(updateChatRoomPrivacy);
+}
+
+export function useSetChatRoomPassphrase() {
+    return useAsyncAction(setChatRoomPassphrase);
+}
+
+export function useClearChatRoomPassphrase() {
+    return useAsyncAction(clearChatRoomPassphrase);
+}
+
+export function useUpdateChatRoomSchedule() {
+    return useAsyncAction(updateChatRoomSchedule);
+}
+
+export function useUploadChatRoomCover() {
+    return useAsyncAction(uploadChatRoomCover);
+}
+
+export function useRemoveChatRoomCover() {
+    return useAsyncAction(removeChatRoomCover);
 }

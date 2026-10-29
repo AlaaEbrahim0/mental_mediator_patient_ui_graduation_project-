@@ -1,11 +1,14 @@
 {
   "repo": "https://github.com/AlaaEbrahim0/nexus-shared-ui.git",
-  "ref": "edc768c57324152af56eafa59af40d091e822f5c",
+  "ref": "04ee58dc6d95681eb6c1d2099937354ab714a6cd",
   "version": "0.1.0",
   "files": [
     "src/api/client.js",
     "src/auth/authProvider.js",
     "src/auth/session.js",
+    "src/components/chat/JoinRoomModal.js",
+    "src/components/chat/RoomCard.js",
+    "src/components/chat/roomsFilter.js",
     "src/components/profile/profileUtils.js",
     "src/components/ui/Comment.js",
     "src/components/ui/CreatePostModal.js",

@@ -11,6 +11,7 @@ import {
     mergeChatMessages,
     mergeRoomArchiveEvent,
     mergeRoomMemberEvent,
+    mergeRoomUpdateEvent,
 } from "./chat";
 
 const room = (overrides = {}) => ({
@@ -173,6 +174,45 @@ describe("room membership events", () => {
         expect(merged.myMemberId).toBe(7);
         expect(merged.isMember).toBe(true);
         expect(merged.lastMessagePreview).toBe("mine");
+    });
+
+    it("merges room-level fields from a RoomUpdated broadcast without touching membership", () => {
+        const local = room({
+            myRole: "Member",
+            myMemberId: 7,
+            description: "local description",
+            lastMessagePreview: "mine",
+        });
+
+        const merged = mergeRoomUpdateEvent(local, {
+            name: "Renamed room",
+            visibility: "Private",
+            isPrivate: true,
+            requiresPassword: true,
+            isLocked: true,
+            coverImageUrl: "https://res.cloudinary.com/demo/cover.png",
+            description: "broadcaster description",
+            myRole: "Owner",
+            myMemberId: 999,
+            isMember: false,
+            lastMessagePreview: "leaked preview",
+        });
+
+        expect(merged.name).toBe("Renamed room");
+        expect(merged.isPrivate).toBe(true);
+        expect(merged.requiresPassword).toBe(true);
+        expect(merged.isLocked).toBe(true);
+        expect(merged.coverImageUrl).toBe("https://res.cloudinary.com/demo/cover.png");
+        expect(merged.description).toBe("local description");
+        expect(merged.myRole).toBe("Member");
+        expect(merged.myMemberId).toBe(7);
+        expect(merged.isMember).toBe(true);
+        expect(merged.lastMessagePreview).toBe("mine");
+    });
+
+    it("returns the room unchanged when the update event is missing", () => {
+        const local = room();
+        expect(mergeRoomUpdateEvent(local, null)).toBe(local);
     });
 });
 
