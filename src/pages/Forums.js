@@ -2,7 +2,6 @@ import React, { useEffect, useCallback, useState, useRef } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useCreatePost, useDeletePost, useGetPosts } from "../api/community.api";
 import { getApiErrorMessage } from "../api/client";
-import { convertUtcToRelativeTime } from "../utils/utcToRelativeTime";
 import toast from "react-hot-toast";
 import { PostSkeleton } from "../components/ui/PostSkeleton";
 import { CreatePostModal } from "../components/ui/CreatePostModal";
@@ -36,6 +35,13 @@ export const Forums = () => {
             .slice(0, 4),
         [data]
     );
+    // Counted over the loaded feed, and deliberately not the four-item sidebar list,
+    // which is capped and would read as "4 active discussions" whenever four exist.
+    const discussedCount = React.useMemo(
+        () => (data || []).filter((post) => (post.commentsCount || 0) > 0).length,
+        [data]
+    );
+
     const [filters, setFilters] = useState({
         fullname: "",
         title: new URLSearchParams(window.location.search).get("search") || "",
@@ -163,8 +169,8 @@ export const Forums = () => {
                                 <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Good care grows through conversation.</h1>
                                 <p className="mt-3 max-w-xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">Share clinical perspectives, learn from peers, and join thoughtful conversations across the Nexus community.</p>
                                 <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-700">
-                                    <span className="inline-flex items-center gap-2"><FiMessageCircle className="text-primary-800" aria-hidden="true" /><strong className="text-slate-900">{data.length}</strong> posts loaded</span>
-                                    <span className="inline-flex items-center gap-2"><FiTrendingUp className="text-primary-800" aria-hidden="true" /><strong className="text-slate-900">{activeDiscussions.length}</strong> active discussions</span>
+                                    <span className="inline-flex items-center gap-2"><FiMessageCircle className="text-primary-800" aria-hidden="true" /><strong className="text-slate-900">{data.length}</strong> discussions on your feed</span>
+                                    <span className="inline-flex items-center gap-2"><FiTrendingUp className="text-primary-800" aria-hidden="true" /><strong className="text-slate-900">{discussedCount}</strong> with replies</span>
                                 </div>
                             </div>
                             <button type="button" className="btn btn-primary shrink-0 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" onClick={handleAddPostClick}><FiPlus aria-hidden="true" /> Start a discussion</button>
@@ -327,7 +333,7 @@ const AnimatedPost = ({
                 authorId={post.appUserId}
                 title={post.title}
                 content={post.content}
-                date={convertUtcToRelativeTime(post.postedOn)}
+                date={post.postedOn}
                 image={post.photoUrl}
                 postPhoto={post.postPhotoUrl}
                 commentCount={post.commentsCount}

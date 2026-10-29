@@ -221,7 +221,12 @@ export const BookAppointment = () => {
             setStep("done");
         } catch (error) {
             const code = error.response?.data?.errors?.[0]?.code;
-            if (error.response?.status === 409 || SLOT_TAKEN_CODES.has(code)) {
+            if (code === "Scheduling.DoctorUnavailable") {
+                // Not a slot problem: the doctor has stopped taking requests, so
+                // reloading the grid would keep offering times that can never be
+                // booked. Say so at the form and leave the choice of doctor to them.
+                setSubmitError(getApiErrorMessage(error, "This doctor is not accepting new appointment requests right now."));
+            } else if (error.response?.status === 409 || SLOT_TAKEN_CODES.has(code)) {
                 // The slot was taken (or the schedule changed) after we loaded it.
                 setNotice("That time is no longer available. Someone may have just booked it. Please choose another time.");
                 setSelectedStart(null);

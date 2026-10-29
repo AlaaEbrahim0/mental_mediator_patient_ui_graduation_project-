@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useDeletePost, useGetPostById } from "../api/community.api";
 import { PostSkeleton } from "../components/ui/PostSkeleton";
-import { convertUtcToRelativeTime } from "../utils/utcToRelativeTime";
 import { Post } from "../components/ui/Post";
 import { useAuth } from "../auth/authProvider";
 import { useNavigate, useParams } from "react-router-dom";
@@ -70,7 +69,7 @@ export const ForumsDetails = () => {
                     authorId={post.appUserId}
                     title={post.title}
                     content={post.content}
-                    date={convertUtcToRelativeTime(post.postedOn)}
+                    date={post.postedOn}
                     image={post.photoUrl}
                     postPhoto={post.postPhotoUrl}
                     commentCount={post.commentsCount}

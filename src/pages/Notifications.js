@@ -1,9 +1,10 @@
 import { FiBell, FiCheckCircle, FiInbox } from "react-icons/fi";
 import { useNotifications } from "../context/notificationsContext";
 import { Notification } from "../components/ui/Notification";
+import { ErrorState } from "../components/ui";
 
 export function Notifications() {
-    const { notifications = [], count = 0, loading, markAllAsRead, fetchNotifications } = useNotifications();
+    const { notifications = [], count = 0, loading, error, markAllAsRead, fetchNotifications } = useNotifications();
 
     return (
         <section className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-base-200 bg-base-100 shadow-sm">
@@ -35,6 +36,14 @@ export function Notifications() {
                         </li>
                     ))}
                 </ul>
+            ) : error && !notifications.length ? (
+                <div className="p-4 sm:p-6">
+                    <ErrorState
+                        title="We could not load your notifications"
+                        message="This is a connection problem, not an empty inbox. Your notifications are still there."
+                        onRetry={() => fetchNotifications()}
+                    />
+                </div>
             ) : (
                 <div className="flex min-h-64 flex-col items-center justify-center px-6 py-12 text-center">
                     <span className="grid h-14 w-14 place-items-center rounded-2xl bg-base-200 text-2xl text-slate-500"><FiInbox aria-hidden="true" /></span>

@@ -1,6 +1,12 @@
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import apiClient from "./client";
+import { MODERATION_REQUEST_TIMEOUT_MS } from "../utils/moderationState";
+
+// The API runs the content-safety model over every post, comment and reply
+// before it saves anything, and that model lives on a service that goes idle.
+// These writes therefore need the longer budget; reads keep the client default.
+const moderation = { timeout: MODERATION_REQUEST_TIMEOUT_MS };
 
 const unwrap = (request) => request.then((response) => response.data).catch((error) => { throw error.response?.data || error; });
 
@@ -24,7 +30,7 @@ export const createPost = (title, content, postPhoto, category, tags) => {
     if (category) formData.append("category", category);
     if (tags) formData.append("tags", tags);
     if (postPhoto) formData.append("photoPost", postPhoto);
-    return unwrap(apiClient.post("/api/posts", formData));
+    return unwrap(apiClient.post("/api/posts", formData, moderation));
 };
 export const updatePost = (id, title, content, postPhoto, category, tags) => {
     const formData = new FormData();
@@ -32,17 +38,17 @@ export const updatePost = (id, title, content, postPhoto, category, tags) => {
     formData.append("content", content);
     if (category) formData.append("category", category);
     if (tags) formData.append("tags", tags);
-    return unwrap(apiClient.put(`/api/posts/${id}`, formData));
+    return unwrap(apiClient.put(`/api/posts/${id}`, formData, moderation));
 };
 export const deletePost = (id) => unwrap(apiClient.delete(`/api/posts/${id}`));
 export const setPostLike = (id, liked) => unwrap(liked ? apiClient.put(`/api/posts/${id}/like`) : apiClient.delete(`/api/posts/${id}/like`));
 export const getComments = (postId) => unwrap(apiClient.get(`/api/posts/${postId}/comments`));
-export const createComment = (postId, content) => unwrap(apiClient.post(`/api/posts/${postId}/comments`, { content }));
-export const updateComment = (postId, commentId, content) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}`, { content }));
+export const createComment = (postId, content) => unwrap(apiClient.post(`/api/posts/${postId}/comments`, { content }, moderation));
+export const updateComment = (postId, commentId, content) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}`, { content }, moderation));
 export const deleteComment = (postId, commentId) => unwrap(apiClient.delete(`/api/posts/${postId}/comments/${commentId}`));
 export const getReplies = (postId, commentId) => unwrap(apiClient.get(`/api/posts/${postId}/comments/${commentId}/replies`));
-export const createReply = (postId, commentId, content) => unwrap(apiClient.post(`/api/posts/${postId}/comments/${commentId}/replies`, { content }));
-export const updateReply = (postId, commentId, replyId, content) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, { content }));
+export const createReply = (postId, commentId, content) => unwrap(apiClient.post(`/api/posts/${postId}/comments/${commentId}/replies`, { content }, moderation));
+export const updateReply = (postId, commentId, replyId, content) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, { content }, moderation));
 export const deleteReply = (postId, commentId, replyId) => unwrap(apiClient.delete(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`));
 export const getNewsArticles = () => unwrap(apiClient.get("/api/articles"));
 

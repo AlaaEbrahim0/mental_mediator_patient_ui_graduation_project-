@@ -3,17 +3,11 @@
   "ref": "8b86f523e272858abe88d9a64d2b0883ae6a81ce",
   "version": "0.1.0",
   "files": [
-    "tailwind.config.js",
-    "src/index.css",
     "src/api/client.js",
     "src/auth/authProvider.js",
     "src/auth/session.js",
-    "src/context/notificationsContext.js",
-    "src/hooks/useChatHub.js",
-    "src/utils/utcToRelativeTime.js",
     "src/components/profile/profileUtils.js",
     "src/components/ui/Comment.js",
-    "src/components/ui/community.js",
     "src/components/ui/CreatePostModal.js",
     "src/components/ui/CustomDeletionModal.js",
     "src/components/ui/CustomToast.js",
@@ -24,7 +18,15 @@
     "src/components/ui/PostSkeleton.js",
     "src/components/ui/Reply.js",
     "src/components/ui/UpdatePostModal.js",
+    "src/components/ui/community.js",
     "src/components/ui/index.js",
-    "src/components/ui/primitives.js"
+    "src/components/ui/primitives.js",
+    "src/context/notificationsContext.js",
+    "src/hooks/useChatHub.js",
+    "src/hooks/useModerationStage.js",
+    "src/index.css",
+    "src/utils/moderationState.js",
+    "src/utils/utcToRelativeTime.js",
+    "tailwind.config.js"
   ]
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FiSend } from "react-icons/fi";
 import { Button } from "../ui";
+import { useModerationStage } from "../../hooks/useModerationStage";
 
 const CONTENT_MAX_LENGTH = 2000;
 
@@ -20,6 +21,7 @@ export const ChatComposer = ({
 }) => {
     const [content, setContent] = useState("");
     const textareaRef = useRef(null);
+    const stage = useModerationStage(isSending);
 
     // Clear the draft when the room becomes read-only.
     useEffect(() => {
@@ -87,9 +89,15 @@ export const ChatComposer = ({
                     aria-label="Send message"
                 >
                     <FiSend aria-hidden="true" />
-                    <span className="hidden sm:inline">Send</span>
+                    <span className="hidden sm:inline">{isSending ? "Checking…" : "Send"}</span>
                 </Button>
             </div>
+            {stage && (
+                <p role="status" aria-live="polite" className="mt-2 text-sm text-neutral-700">
+                    <span className="font-semibold">{stage.label}</span>
+                    {stage.detail && <span className="mt-0.5 block text-xs text-neutral-600">{stage.detail}</span>}
+                </p>
+            )}
             <p className="mt-1.5 text-xs text-neutral-500">
                 Messages are visible to everyone in this room. Do not share personal
                 health information.

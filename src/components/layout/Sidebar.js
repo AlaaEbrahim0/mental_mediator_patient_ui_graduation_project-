@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { MdOutlineSpaceDashboard } from "react-icons/md";
 import { BiMessageSquareDetail } from "react-icons/bi";
-import { FiCalendar, FiSearch, FiSettings } from "react-icons/fi";
+import { FiCalendar, FiSearch, FiSettings, FiBell } from "react-icons/fi";
 import { HiOutlineLogin } from "react-icons/hi";
 import { NavLink } from "react-router-dom";
 import { IoIosClose } from "react-icons/io";
@@ -33,6 +33,11 @@ export function Sidebar({ isOpen, setIsOpen }) {
                 name: "My appointments",
                 icon: <FiCalendar className={iconStyles} />,
                 link: "/appointments",
+            },
+            {
+                name: "Notifications",
+                icon: <FiBell className={iconStyles} />,
+                link: "/notifications",
             },
             {
                 name: "Community",

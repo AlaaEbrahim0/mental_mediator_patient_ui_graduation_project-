@@ -66,6 +66,11 @@ export const TopBar = ({ title = "Nexus", toggleSidebar, sidebarOpen = false }) 
                     <div className="max-h-[min(24rem,65vh)] overflow-y-auto p-2">
                         {loading ? <div className="space-y-2 p-2" aria-label="Loading notifications"><div className="h-14 animate-pulse rounded-xl bg-neutral-100" /><div className="h-14 animate-pulse rounded-xl bg-neutral-100" /></div> : notifications.length ? notifications.slice(0, 10).map((notification) => <Notification key={notification.id} {...notification} />) : <p className="px-4 py-8 text-center text-sm text-neutral-600">No notifications yet</p>}
                     </div>
+                    <div className="border-t border-neutral-200 p-2">
+                        <Link to="/notifications" className="flex min-h-10 items-center justify-center rounded-xl px-3 text-sm font-semibold text-primary-800 transition hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700">
+                            View all notifications
+                        </Link>
+                    </div>
                 </section>
             </div>
 

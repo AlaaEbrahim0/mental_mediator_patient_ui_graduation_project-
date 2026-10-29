@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import apiClient, { getApiErrorMessage } from "./client";
 import { createClientMessageId, mergeChatMessages } from "../utils/chat";
+import { MODERATION_REQUEST_TIMEOUT_MS } from "../utils/moderationState";
 
 // Chat API client.
 //
@@ -45,7 +46,12 @@ export const getChatMessages = (roomId, params) =>
     request(apiClient.get(`/api/chat/rooms/${roomId}/messages`, { params }));
 
 export const sendChatMessage = (roomId, payload) =>
-    request(apiClient.post(`/api/chat/rooms/${roomId}/messages`, payload));
+    request(apiClient.post(`/api/chat/rooms/${roomId}/messages`, payload, {
+        // The message is moderated before it is stored, and the model behind
+        // that check can be starting up. Outlast the server rather than
+        // reporting a failure for a send that was still going to succeed.
+        timeout: MODERATION_REQUEST_TIMEOUT_MS,
+    }));
 
 export const deleteChatMessage = (messageId) =>
     request(apiClient.delete(`/api/chat/messages/${messageId}`));
@@ -93,7 +99,7 @@ export const getChatErrorMessage = (error, fallback = "Something went wrong. Ple
         case "Chat.ContentRejected":
             return "Your message breaks the community content policy and was not sent.";
         case "Chat.ModerationUnavailable":
-            return "Message moderation is temporarily unavailable. Please try again in a moment.";
+            return "The safety check didn't finish - it can be slow to start after a quiet period - so your message was not sent. It was not rejected. Try again in a moment.";
         case "Chat.RoomArchived":
             return "This room has been archived and no longer accepts new activity.";
         case "Chat.OwnerCannotLeave":

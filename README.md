@@ -122,7 +122,16 @@ hub URL, so the trimming is intentional and should be kept.
 
 ## Shared UI
 
-This portal vendors **23 files** from [nexus-shared-ui](https://github.com/AlaaEbrahim0/nexus-shared-ui): `tailwind.config.js`, `src/index.css`, the UI primitives under `src/components/ui/` (plus the explicit `ui/community.js` entry), the Axios client, auth/session helpers, `notificationsContext`, `profileUtils`, `useChatHub`, and `convertUtcToRelativeTime`.
+This portal vendors **25 files** from [nexus-shared-ui](https://github.com/AlaaEbrahim0/nexus-shared-ui): `tailwind.config.js`, `src/index.css`, the UI primitives under `src/components/ui/` (plus the explicit `ui/community.js` entry), the Axios client, auth/session helpers, `notificationsContext`, `profileUtils`, `useChatHub`, and `convertUtcToRelativeTime`.
+
+> **Pending upstream re-pin.** The content-safety modules added for the slow-moderation
+> handling - `src/utils/moderationState.js`, `src/hooks/useModerationStage.js`, and the
+> rewritten `src/utils/utcToRelativeTime.js` - are registered in `.shared-ui.json` and
+> copied into this portal, but they are not yet in the pinned upstream commit of
+> nexus-shared-ui. `npm run shared-ui:check` will therefore report drift here until that
+> repository is committed and pushed and this pin is re-bumped to the new sha:
+> `npm run shared-ui:sync -- --ref <sha> && npm run shared-ui:sync && npm run shared-ui:check`.
+> Push shared-ui first, then the portals - not the other way round.
 
 `src/components/ui/index.js` re-exports only the primitives. The community components are reached
 through `src/components/ui/community.js` or by direct path, because they import `react-markdown`
