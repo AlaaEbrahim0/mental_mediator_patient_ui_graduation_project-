@@ -1,6 +1,6 @@
 {
   "repo": "https://github.com/AlaaEbrahim0/nexus-shared-ui.git",
-  "ref": "8b86f523e272858abe88d9a64d2b0883ae6a81ce",
+  "ref": "edc768c57324152af56eafa59af40d091e822f5c",
   "version": "0.1.0",
   "files": [
     "src/api/client.js",
