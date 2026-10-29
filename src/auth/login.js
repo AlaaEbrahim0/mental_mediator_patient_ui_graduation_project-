@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { FcGoogle } from "react-icons/fc";
 import { signIn, resendConfirmationEmail } from "../api/auth.api";
 import { getApiErrorMessage } from "../api/client";
 import { AuthLayout } from "../components/layout/AuthLayout";
 import { Alert, Button, Input } from "../components/ui";
 import { hasPatientRole } from "../routes/ProtectedRoute";
 import { useAuth } from "./authProvider";
+import { googleSignInUrl } from "./externalSession";
 import { saveSession } from "./session";
 
 const EMAIL_PATTERN = /\S+@\S+\.\S+/;
@@ -76,6 +78,13 @@ export const Login = () => {
         }
     };
 
+    // A top-level navigation, not navigate(): the API owns the Google redirect
+    // and comes back to this origin as a browser navigation with a one-time
+    // token, which React Router never sees as its own location change.
+    const startGoogleSignIn = () => {
+        window.location.assign(googleSignInUrl());
+    };
+
     const resend = async () => {
         setResendState("sending");
         try {
@@ -134,6 +143,15 @@ export const Login = () => {
                     <Link to="/forgot-password" className="text-sm font-semibold text-primary-700 hover:underline">Forgot your password?</Link>
                 </div>
                 <Button type="submit" size="lg" fullWidth loading={isSubmitting} loadingText="Signing in…">Sign in</Button>
+                <div className="flex items-center gap-3" aria-hidden="true">
+                    <span className="h-px flex-1 bg-neutral-200" />
+                    <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">or</span>
+                    <span className="h-px flex-1 bg-neutral-200" />
+                </div>
+                <Button variant="outline" size="lg" fullWidth onClick={startGoogleSignIn} disabled={isSubmitting}>
+                    <FcGoogle className="h-5 w-5" />
+                    Continue with Google
+                </Button>
             </form>
         </AuthLayout>
     );
