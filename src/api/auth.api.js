@@ -34,21 +34,3 @@ export const resetPassword = async ({ email, token, newPassword }) => {
     return data;
 };
 
-export const getMyProfile = async () => {
-    const { data } = await apiClient.get("/api/users/me");
-    return data;
-};
-
-export const updateMyProfile = async (profile) => {
-    const formData = new FormData();
-    formData.append("FirstName", profile.firstName);
-    formData.append("LastName", profile.lastName);
-    formData.append("BirthDate", profile.birthDate);
-    formData.append("Gender", profile.gender);
-    formData.append("Biography", profile.biography || "");
-    formData.append("PhoneNumber", profile.phoneNumber || "");
-    formData.append("City", profile.city || "");
-    if (profile.photo) formData.append("Photo", profile.photo);
-    const { data } = await apiClient.put("/api/users/me", formData);
-    return data;
-};

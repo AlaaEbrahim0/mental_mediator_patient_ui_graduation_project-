@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { getApiErrorMessage } from "../api/client";
-import { getMyProfile, updateMyProfile } from "../api/auth.api";
+import { getMyProfile, updateMyPhoto, updateMyProfile } from "../api/profile.api";
 import { useAuth } from "../auth/authProvider";
 
 const UserProfileContext = createContext(null);
@@ -42,7 +42,17 @@ export const UserProfileProvider = ({ children }) => {
     const updateUserProfile = useCallback(async (updates) => {
         setUpdateLoading(true);
         try {
-            const updated = await updateMyProfile(updates);
+            const { photo, ...fields } = updates;
+            // The rich profile endpoint replaces every submitted field, so
+            // merge the form changes onto the loaded profile to preserve
+            // social links, visibility and doctor details this form omits.
+            let updated = await updateMyProfile({
+                ...(userProfileData || {}),
+                ...fields,
+            });
+            if (photo) {
+                updated = await updateMyPhoto(photo);
+            }
             setUserProfileData(updated);
             toast.success("Profile updated");
             return updated;
@@ -52,7 +62,7 @@ export const UserProfileProvider = ({ children }) => {
         } finally {
             setUpdateLoading(false);
         }
-    }, []);
+    }, [userProfileData]);
 
     const value = useMemo(
         () => ({ userProfileData, isLoading, error, refresh, updateUserProfile, updateLoading }),

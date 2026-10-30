@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useState, useRef } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useCreatePost, useDeletePost, useGetPosts } from "../api/community.api";
+import { deletePost, deletePostMedia, getLatestDraft, savePostDraft, updatePost, uploadPostMedia, useCreatePost, useDeletePost, useGetPosts } from "../api/community.api";
+import { getMyChatRooms } from "../api/chat.api";
 import { getApiErrorMessage } from "../api/client";
 import toast from "react-hot-toast";
 import { PostSkeleton } from "../components/ui/PostSkeleton";
@@ -19,9 +20,13 @@ export const Forums = () => {
     const { isLoadingDelete, execute: executeDelete } = useDeletePost();
     const navigate = useNavigate();
     const location = useLocation();
-    const { userId } = useAuth();
+    const { userId, roles } = useAuth();
+    const canPostDoctorsOnly = (roles || []).some((role) => typeof role === "string" && ["doctor", "admin"].includes(role.toLowerCase()));
     const { userProfileData } = useUserProfile();
     const [isModalVisible, setModalVisible] = useState(false);
+    const [latestDraft, setLatestDraft] = useState(null);
+    const [groupOptions, setGroupOptions] = useState([]);
+    const [isPublishing, setPublishing] = useState(false);
     const [isFilterVisible, setFilterVisible] = useState(false);
     const [feedSort, setFeedSort] = useState("recent");
     const sortedPosts = React.useMemo(() => [...(data || [])].sort((left, right) => {
@@ -104,32 +109,92 @@ export const Forums = () => {
 
     const { isLoading: isCreatePostLoading, execute: createPostExecute } =
         useCreatePost();
-    const handleCreatePost = async (title, content, postPhoto, category, tags) => {
-        if (!title || !content) {
-            toast.error("Title and content are required");
-            return;
+
+    useEffect(() => {
+        if (!userId) {
+            setGroupOptions([]);
+            return undefined;
         }
+
+        let active = true;
+        getMyChatRooms()
+            .then((rooms) => {
+                if (active) {
+                    setGroupOptions(
+                        rooms.map((room) => ({ id: room.id, label: room.name }))
+                    );
+                }
+            })
+            .catch(() => {
+                if (active) setGroupOptions([]);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [userId]);
+
+    useEffect(() => {
+        if (!isModalVisible || !userId) return undefined;
+
+        let active = true;
+        getLatestDraft()
+            .then((draft) => {
+                if (active) setLatestDraft(draft);
+            })
+            .catch(() => {
+                if (active) setLatestDraft(null);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [isModalVisible, userId]);
+
+    const handleCreatePost = async (payload, draftId) => {
         try {
-            await createPostExecute(title, content, postPhoto, category, tags);
-            reset();
-            setFilters({
+            if (draftId) {
+                setPublishing(true);
+                await updatePost(draftId, { ...payload, isDraft: false });
+            } else {
+                await createPostExecute(payload);
+            }
+            setLatestDraft(null);
+            const nextFilters = {
                 fullname: "",
                 title: "",
                 content: "",
                 from: "",
                 to: "",
-                showConfessions: false,
-            });
-            await execute(1, 20, filters);
+                showConfessions: Boolean(payload.isAnonymous),
+            };
+            reset();
+            setFilters(nextFilters);
+            await execute(1, 20, nextFilters);
             setModalVisible(false);
-            toast.success("Post created successfully");
+            toast.success(payload.isAnonymous ? "Anonymous post published under Confessions" : "Post created successfully");
         } catch (e) {
             toast.error(getApiErrorMessage(e, "Could not create your post. Please try again."), {
                 duration: 4000,
                 position: "top-center",
                 className: "text-lg text-primary",
             });
+            throw e;
+        } finally {
+            setPublishing(false);
         }
+    };
+
+    const handleSaveDraft = async (payload, draftId) => {
+        const saved = await savePostDraft(payload, draftId);
+        if (saved?.id) setLatestDraft(saved);
+        toast.success("Draft saved to your account");
+        return saved;
+    };
+
+    const handleDiscardDraft = async (draftId) => {
+        if (draftId) await deletePost(draftId);
+        setLatestDraft(null);
     };
 
     const handleFilter = (appliedFilters) => {
@@ -200,7 +265,7 @@ export const Forums = () => {
                                 </div>
                             </div>
                             {isFilterVisible && (
-                                <div className="fixed inset-0 z-modal flex items-center justify-center overflow-y-auto bg-slate-950/50 p-3 sm:p-6">
+                                <div className="fixed inset-0 z-modal flex items-start justify-center overflow-y-auto bg-slate-950/50 p-3 sm:p-6">
                                     <FilterationComponent
                                         onClose={toggleShowFilters}
                                         onFilter={handleFilter}
@@ -280,7 +345,7 @@ export const Forums = () => {
                                     {activeDiscussions.length ? <ul className="space-y-2">
                                         {activeDiscussions.map((post) => <li key={post.id}>
                                             <button type="button" onClick={() => navigate(`/forums/${post.id}`)} className="w-full rounded-xl p-3 text-left transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600">
-                                                <span className="block line-clamp-2 text-sm font-semibold text-neutral-800">{post.title}</span>
+                                                <span className="block line-clamp-2 text-sm font-semibold text-neutral-800">{post.title || "Untitled discussion"}</span>
                                                 <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-neutral-600"><FiMessageCircle aria-hidden="true" /> {post.commentsCount} comments</span>
                                             </button>
                                         </li>)}
@@ -292,7 +357,15 @@ export const Forums = () => {
                         isVisible={isModalVisible}
                         onClose={handleCloseModal}
                         onCreate={handleCreatePost}
-                        loading={isCreatePostLoading}
+                        loading={isCreatePostLoading || isPublishing}
+                        onUploadMedia={uploadPostMedia}
+                        onDeleteMedia={deletePostMedia}
+                        onSaveDraft={handleSaveDraft}
+                        onDiscardDraft={handleDiscardDraft}
+                        groups={groupOptions}
+                        initialDraft={latestDraft}
+                        canPostDoctorsOnly={canPostDoctorsOnly}
+                        currentUserId={userId}
                     />
                 </InfiniteScroll>
             </motion.div>
@@ -336,6 +409,8 @@ const AnimatedPost = ({
                 date={post.postedOn}
                 image={post.photoUrl}
                 postPhoto={post.postPhotoUrl}
+                media={post.media}
+                isOwnPost={post.isOwnPost}
                 commentCount={post.commentsCount}
                 likesCount={post.likesCount}
                 isLikedByCurrentUser={post.isLikedByCurrentUser}

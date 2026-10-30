@@ -316,8 +316,8 @@ export const BookAppointment = () => {
                 <Alert variant="warning" title="Please pick another time" action={<Button size="sm" variant="ghost" onClick={() => setNotice("")}>Dismiss</Button>}>{notice}</Alert>
             )}
 
-            <div className="grid gap-6 lg:grid-cols-3">
-                <div className="space-y-6 lg:col-span-2">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                <div className="min-w-0 space-y-6">
                     {step === "choose" ? (
                         <Card>
                             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -328,8 +328,9 @@ export const BookAppointment = () => {
                                         {zonesDiffer && ` The doctor practises in ${meta.timeZoneId}.`}
                                     </p>
                                 </div>
-                                <Button variant="outline" size="sm" onClick={refreshAvailability} disabled={isSlotsLoading}>
-                                    <FiRefreshCw aria-hidden="true" className={isSlotsLoading ? "animate-spin" : ""} /> Refresh times
+                                <Button variant="outline" size="sm" onClick={refreshAvailability} disabled={isSlotsLoading} aria-label="Refresh times">
+                                    <FiRefreshCw aria-hidden="true" className={isSlotsLoading ? "animate-spin" : ""} />
+                                    <span className="hidden sm:inline">Refresh times</span>
                                 </Button>
                             </div>
 
@@ -351,7 +352,7 @@ export const BookAppointment = () => {
                             ) : (
                                 <>
                                     {slotsError && <Alert variant="error" className="mt-4">{slotsError}</Alert>}
-                                    <div role="group" aria-label="Available dates" className="mt-5 flex gap-2 overflow-x-auto pb-2">
+                                    <div role="group" aria-label="Available dates" className="mt-5 flex min-w-0 gap-1.5 overflow-x-auto pb-2">
                                         {days.map((day) => {
                                             const date = dateFromKey(day.key);
                                             const active = day.key === selectedDateKey;
@@ -361,7 +362,7 @@ export const BookAppointment = () => {
                                                     type="button"
                                                     aria-pressed={active}
                                                     onClick={() => setSelectedDateKey(day.key)}
-                                                    className={`flex w-[4.5rem] shrink-0 flex-col items-center rounded-xl border px-2 py-2.5 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 ${
+                                                    className={`flex w-16 shrink-0 flex-col items-center rounded-xl border px-1.5 py-2 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 ${
                                                         active ? "border-primary-700 bg-primary-700 text-white shadow-md" : "border-neutral-300 bg-base-100 text-neutral-800 hover:border-primary-400"
                                                     }`}
                                                 >
@@ -389,7 +390,7 @@ export const BookAppointment = () => {
                                                     return (
                                                         <div key={part.id}>
                                                             <p className="mb-2 text-xs font-bold uppercase tracking-wide text-neutral-500">{part.label}</p>
-                                                            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
+                                                            <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5 sm:gap-2 lg:grid-cols-6">
                                                                 {slots.map((slot) => {
                                                                     const active = slot.startTime === selectedStart;
                                                                     return (
@@ -399,7 +400,7 @@ export const BookAppointment = () => {
                                                                             role="radio"
                                                                             aria-checked={active}
                                                                             onClick={() => setSelectedStart(slot.startTime)}
-                                                                            className={`h-11 rounded-xl border text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 ${
+                                                                            className={`h-11 rounded-xl border text-[0.8125rem] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 sm:text-sm ${
                                                                                 active ? "border-primary-700 bg-primary-700 text-white shadow-md" : "border-neutral-300 bg-base-100 text-neutral-800 hover:border-primary-500 hover:bg-primary-50"
                                                                             }`}
                                                                         >

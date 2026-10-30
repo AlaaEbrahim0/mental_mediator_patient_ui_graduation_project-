@@ -28,6 +28,33 @@ export const getChatRooms = (params) =>
 export const getChatRoom = (roomId) =>
     request(apiClient.get(`/api/chat/rooms/${roomId}`));
 
+/**
+ * Rooms the signed-in user is an active member of, for the composer's group
+ * audience. The directory endpoint pages through every listable room, so this
+ * follows a bounded number of pages rather than loading the whole platform.
+ */
+export const getMyChatRooms = async () => {
+    const memberRooms = [];
+    let beforeRoomId = null;
+    let pageCount = 0;
+
+    do {
+        const page = await getChatRooms({
+            limit: 50,
+            ...(beforeRoomId ? { beforeRoomId } : {}),
+        });
+        memberRooms.push(
+            ...(page?.rooms || []).filter(
+                (room) => room.isMember && !room.isArchived
+            )
+        );
+        beforeRoomId = page?.nextBeforeRoomId ?? null;
+        pageCount += 1;
+    } while (beforeRoomId && pageCount < 5);
+
+    return memberRooms;
+};
+
 export const createChatRoom = (payload) =>
     request(apiClient.post("/api/chat/rooms", payload));
 
@@ -52,6 +79,10 @@ export const joinChatRoom = async (roomId, passphrase) => {
 // resolved value is undefined. That is a success, not a missing response.
 export const leaveChatRoom = (roomId) =>
     apiClient.post(`/api/chat/rooms/${roomId}/leave`).then(() => undefined);
+
+// Marks the caller's read position in the room. Answers 204, like leave.
+export const markChatRoomRead = (roomId) =>
+    apiClient.put(`/api/chat/rooms/${roomId}/read`).then(() => undefined);
 
 export const getChatRoomMembers = (roomId) =>
     request(apiClient.get(`/api/chat/rooms/${roomId}/members`));

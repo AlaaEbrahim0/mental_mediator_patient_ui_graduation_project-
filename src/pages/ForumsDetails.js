@@ -72,6 +72,8 @@ export const ForumsDetails = () => {
                     date={post.postedOn}
                     image={post.photoUrl}
                     postPhoto={post.postPhotoUrl}
+                    media={post.media}
+                    isOwnPost={post.isOwnPost}
                     commentCount={post.commentsCount}
                     likesCount={post.likesCount}
                     isLikedByCurrentUser={post.isLikedByCurrentUser}

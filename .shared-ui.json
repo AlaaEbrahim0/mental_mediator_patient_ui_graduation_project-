@@ -1,9 +1,10 @@
 {
   "repo": "https://github.com/AlaaEbrahim0/nexus-shared-ui.git",
-  "ref": "04ee58dc6d95681eb6c1d2099937354ab714a6cd",
+  "ref": "4a416a6b64b1c76c415033ff95df25087f76b544",
   "version": "0.1.0",
   "files": [
     "src/api/client.js",
+    "src/api/notifications.api.js",
     "src/auth/authProvider.js",
     "src/auth/session.js",
     "src/components/chat/JoinRoomModal.js",
@@ -29,6 +30,7 @@
     "src/hooks/useModerationStage.js",
     "src/index.css",
     "src/utils/moderationState.js",
+    "src/utils/postComposerConfig.js",
     "src/utils/utcToRelativeTime.js",
     "tailwind.config.js"
   ]

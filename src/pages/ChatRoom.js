@@ -31,6 +31,7 @@ import { useChatHub } from "../hooks/useChatHub";
 import { useRefreshOnFocus } from "../hooks/useRefreshOnFocus";
 import {
     getChatErrorMessage,
+    markChatRoomRead,
     useArchiveChatRoom,
     useChatMembers,
     useChatMessages,
@@ -145,9 +146,22 @@ const ChatRoomView = ({ roomId }) => {
     const scrollRef = useRef(null);
     const restoreRef = useRef(null);
     const stickToBottomRef = useRef(true);
+    const lastReadMarkRef = useRef(0);
     const [newMessageCount, setNewMessageCount] = useState(0);
 
     const isValidRoomId = Number.isInteger(roomId) && roomId > 0;
+
+    const markRoomRead = useCallback(() => {
+        if (!isMember) return;
+
+        // A busy room delivers messages in bursts; one write every few
+        // seconds is enough for a badge that is only read on the way out.
+        const now = Date.now();
+        if (now - lastReadMarkRef.current < 5000) return;
+        lastReadMarkRef.current = now;
+
+        markChatRoomRead(roomId).catch(() => undefined);
+    }, [isMember, roomId]);
 
     // A leave in another tab or on another device cannot reach this tab as a
     // MemberLeft event: the server removes the leaver's connections before it
@@ -165,6 +179,19 @@ const ChatRoomView = ({ roomId }) => {
 
         loadRoom().catch(() => undefined);
     }, [isValidRoomId, loadRoom]);
+
+    // Opening a room reads it; leaving marks anything seen while the tab was
+    // open so the directory badge matches the conversation.
+    useEffect(() => {
+        if (!isMember) return undefined;
+
+        lastReadMarkRef.current = 0;
+        markRoomRead();
+
+        return () => {
+            markChatRoomRead(roomId).catch(() => undefined);
+        };
+    }, [isMember, roomId, markRoomRead]);
 
     // The history is only visible to active members. The endpoint answers 404
     // for everybody else, so it is never called for a non-member.
@@ -218,6 +245,7 @@ const ChatRoomView = ({ roomId }) => {
         onReconnected: handleReconnected,
         onMessageCreated: (message) => {
             upsertMessage(message);
+            markRoomRead();
 
             // Only a message from somebody else counts as "new" for the
             // affordance. The sender's own message is scrolled to.
@@ -281,8 +309,8 @@ const ChatRoomView = ({ roomId }) => {
 
         lastRecoveryVersionRef.current = subscriptionVersion;
 
-        recoverAfterLatest().catch(() => undefined);
-    }, [subscriptionVersion, historyReadyRoomId, roomId, recoverAfterLatest]);
+        recoverAfterLatest().then(markRoomRead).catch(() => undefined);
+    }, [subscriptionVersion, historyReadyRoomId, roomId, recoverAfterLatest, markRoomRead]);
 
     // Keep the viewport at the bottom while the doctor is reading it. When
     // older messages are prepended the scroll position is restored instead,
