@@ -21,17 +21,6 @@ export const ForumsDetails = () => {
     const [groupOptions, setGroupOptions] = useState([]);
 
     useEffect(() => {
-        const hash = window.location.hash;
-        if (hash && hash.startsWith("#comment-")) {
-            const commentId = hash.substring("#comment-".length);
-            const commentElement = document.getElementById(`${commentId}`);
-            if (commentElement) {
-                commentElement.scrollIntoView({ behavior: "smooth" });
-            }
-        }
-    }, []);
-
-    useEffect(() => {
         if (!userId) return undefined;
         let active = true;
         getMyChatRooms()
