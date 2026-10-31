@@ -1,9 +1,14 @@
 {
   "repo": "https://github.com/AlaaEbrahim0/nexus-shared-ui.git",
-  "ref": "4a416a6b64b1c76c415033ff95df25087f76b544",
+  "ref": "0b0812a108d8ea9055c8133fb6e9c57dff99ee17",
   "version": "0.1.0",
   "files": [
     "src/api/client.js",
+    "src/components/media/MediaGallery.js",
+    "src/components/profile/ProfileView.js",
+    "src/components/history/PatientHistoryTimeline.js",
+    "src/components/chat/RoomSettingsModal.js",
+    "src/components/routing/ScrollManager.js",
     "src/api/notifications.api.js",
     "src/auth/authProvider.js",
     "src/auth/session.js",
@@ -12,7 +17,6 @@
     "src/components/chat/roomsFilter.js",
     "src/components/profile/profileUtils.js",
     "src/components/ui/Comment.js",
-    "src/components/ui/CreatePostModal.js",
     "src/components/ui/CustomDeletionModal.js",
     "src/components/ui/CustomToast.js",
     "src/components/ui/FilterationComponent.js",

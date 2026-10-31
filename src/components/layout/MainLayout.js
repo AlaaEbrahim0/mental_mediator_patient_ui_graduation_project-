@@ -11,6 +11,7 @@ const getTitle = (path) => {
     if (normalizedPath.startsWith("/community") || normalizedPath.startsWith("/forums")) return "Community";
     if (normalizedPath.startsWith("/doctors")) return "Find a doctor";
     if (normalizedPath.startsWith("/appointments")) return "My appointments";
+    if (normalizedPath.startsWith("/history")) return "Health history";
     switch (normalizedPath) {
         case "/forums":
             return "Forums";

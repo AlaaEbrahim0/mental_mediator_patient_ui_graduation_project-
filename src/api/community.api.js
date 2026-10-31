@@ -66,31 +66,6 @@ const buildPostFormData = (payload = {}) => {
     return formData;
 };
 
-export const createPost = (payload = {}, { draft = false } = {}) =>
-    unwrap(
-        apiClient.post(
-            "/api/posts",
-            buildPostFormData({ ...payload, isDraft: draft }),
-            moderation
-        )
-    );
-
-export const savePostDraft = (payload = {}, draftId = null) => {
-    const formData = buildPostFormData({ ...payload, isDraft: true });
-    return draftId
-        ? unwrap(apiClient.put(`/api/posts/${draftId}`, formData, moderation))
-        : unwrap(apiClient.post("/api/posts", formData, moderation));
-};
-
-export const getLatestDraft = () =>
-    apiClient
-        .get("/api/posts/drafts/latest")
-        .then((response) => response.data || null)
-        .catch((error) => {
-            if (error.response?.status === 204) return null;
-            throw error.response?.data || error;
-        });
-
 export const updatePost = (id, payload = {}) =>
     unwrap(
         apiClient.put(`/api/posts/${id}`, buildPostFormData(payload), moderation)
@@ -168,18 +143,6 @@ function useEndpoint(request, initialData) {
 
 export function useGetPostById() {
     return useEndpoint(getPostById, []);
-}
-
-export function useCreatePost() {
-    return useEndpoint(createPost);
-}
-
-export function useGetLatestDraft() {
-    return useEndpoint(getLatestDraft, null);
-}
-
-export function useSavePostDraft() {
-    return useEndpoint(savePostDraft);
 }
 
 export function useUpdatePost() {

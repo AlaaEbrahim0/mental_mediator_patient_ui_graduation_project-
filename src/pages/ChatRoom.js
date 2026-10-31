@@ -9,6 +9,7 @@ import {
     FiPauseCircle,
     FiPlayCircle,
     FiShield,
+    FiSettings,
     FiUsers,
 } from "react-icons/fi";
 import toast from "react-hot-toast";
@@ -26,12 +27,21 @@ import { ChatMessageItem } from "../components/chat/ChatMessageItem";
 import { ReportMessageModal } from "../components/chat/ReportMessageModal";
 import { RoomMembersPanel } from "../components/chat/RoomMembersPanel";
 import { RoomReportsPanel } from "../components/chat/RoomReportsPanel";
+import { RoomSettingsModal } from "../components/chat/RoomSettingsModal";
 import { JoinRoomModal } from "../components/ui/community";
 import { useChatHub } from "../hooks/useChatHub";
 import { useRefreshOnFocus } from "../hooks/useRefreshOnFocus";
 import {
     getChatErrorMessage,
     markChatRoomRead,
+    clearChatRoomPassphrase,
+    getChatRoom,
+    removeChatRoomCover,
+    setChatRoomPassphrase,
+    updateChatRoom,
+    updateChatRoomPrivacy,
+    updateChatRoomSchedule,
+    uploadChatRoomCover,
     useArchiveChatRoom,
     useChatMembers,
     useChatMessages,
@@ -132,6 +142,7 @@ const ChatRoomView = ({ roomId }) => {
     const [isJoinDialogOpen, setJoinDialogOpen] = useState(false);
     const [isLockBusy, setIsLockBusy] = useState(false);
     const [showReports, setShowReports] = useState(false);
+    const [isSettingsOpen, setSettingsOpen] = useState(false);
     const [busyMessageId, setBusyMessageId] = useState(null);
     const [isSending, setIsSending] = useState(false);
 
@@ -427,6 +438,19 @@ const ChatRoomView = ({ roomId }) => {
             setLeaveDialogOpen(false);
             toast.error(getChatErrorMessage(error, "You could not leave this room."));
         }
+    };
+
+    const handleSettingsRoomUpdated = (updated) => {
+        if (updated) {
+            setRoom((previous) => mergeRoomUpdateEvent(previous, updated));
+        }
+    };
+
+    const refreshRoom = async () => getChatRoom(roomId);
+
+    const clearRoomPassphrase = async () => {
+        await clearChatRoomPassphrase(roomId);
+        return refreshRoom();
     };
 
     const handleArchive = async () => {
@@ -796,6 +820,22 @@ const ChatRoomView = ({ roomId }) => {
 
                     {canModerate && (
                         <Card>
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <h2 className="text-sm font-bold text-neutral-900">Room settings</h2>
+                                    <p className="mt-1 text-xs leading-5 text-neutral-600">
+                                        Change the name, privacy, room password, schedule or cover.
+                                    </p>
+                                </div>
+                                <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
+                                    <FiSettings aria-hidden="true" /> Manage
+                                </Button>
+                            </div>
+                        </Card>
+                    )}
+
+                    {canModerate && (
+                        <Card>
                             <div className="mb-3 flex items-center justify-between gap-2">
                                 <h2 className="text-sm font-bold text-neutral-900">Moderation</h2>
                                 <Button
@@ -850,6 +890,20 @@ const ChatRoomView = ({ roomId }) => {
                     </Card>
                 </aside>
             </div>
+
+            <RoomSettingsModal
+                isOpen={isSettingsOpen}
+                room={room}
+                onClose={() => setSettingsOpen(false)}
+                onRoomUpdated={handleSettingsRoomUpdated}
+                updateDetails={(payload) => updateChatRoom(roomId, payload)}
+                updatePrivacy={(visibility) => updateChatRoomPrivacy(roomId, visibility)}
+                setPassphrase={(value) => setChatRoomPassphrase(roomId, value)}
+                clearPassphrase={clearRoomPassphrase}
+                updateSchedule={(scheduledStartAtUtc) => updateChatRoomSchedule(roomId, scheduledStartAtUtc)}
+                uploadCover={(file) => uploadChatRoomCover(roomId, file)}
+                removeCover={() => removeChatRoomCover(roomId)}
+            />
 
             <ReportMessageModal
                 isOpen={Boolean(reportTarget)}

@@ -36,13 +36,25 @@ const nextAction = (appointment) => {
     }
 };
 
-const AppointmentCard = ({ appointment, onOpen, onCancel }) => (
+const AppointmentCard = ({ appointment, onOpen, onCancel }) => {
+    const doctorPath = appointment.doctorId
+        ? `/doctors/${encodeURIComponent(appointment.doctorId)}`
+        : null;
+    return (
     <Card className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="flex min-w-0 flex-1 items-start gap-4">
-            <Avatar src={appointment.doctorPhotoUrl} name={appointment.doctorName} />
+            {doctorPath ? (
+                <Link to={doctorPath} aria-label={`View Dr. ${appointment.doctorName}'s profile`} className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2">
+                    <Avatar src={appointment.doctorPhotoUrl} name={appointment.doctorName} />
+                </Link>
+            ) : (
+                <Avatar src={appointment.doctorPhotoUrl} name={appointment.doctorName} />
+            )}
             <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="truncate text-base font-bold text-neutral-900">Dr. {appointment.doctorName}</h3>
+                    <h3 className="truncate text-base font-bold text-neutral-900">
+                        {doctorPath ? <Link to={doctorPath} className="rounded hover:text-primary-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700">Dr. {appointment.doctorName}</Link> : `Dr. ${appointment.doctorName}`}
+                    </h3>
                     <StatusBadge status={appointment.status} size="sm" />
                 </div>
                 <p className="mt-1 flex items-center gap-2 text-sm font-medium text-neutral-800">
@@ -63,7 +75,8 @@ const AppointmentCard = ({ appointment, onOpen, onCancel }) => (
             )}
         </div>
     </Card>
-);
+    );
+};
 
 export const Appointments = () => {
     const [tab, setTab] = useState("upcoming");

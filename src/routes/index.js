@@ -11,6 +11,8 @@ import { Doctors } from "../pages/Doctors";
 import { DoctorDetails } from "../pages/DoctorDetails";
 import { BookAppointment } from "../pages/BookAppointment";
 import { Appointments } from "../pages/Appointments";
+import { PatientHistory } from "../pages/PatientHistory";
+import { PublicProfile } from "../pages/PublicProfile";
 import { Profile } from "../pages/Profile";
 import { Notifications } from "../pages/Notifications";
 import { CommunityLayout } from "../pages/CommunityLayout";
@@ -19,6 +21,7 @@ import { ForumsDetails } from "../pages/ForumsDetails";
 import { ChatRooms } from "../pages/ChatRooms";
 import { ChatRoom } from "../pages/ChatRoom";
 import { ProtectedRoute, hasPatientRole } from "./ProtectedRoute";
+import { RootScrollLayout } from "../components/routing/ScrollManager";
 
 // Signed-in patients skip the public auth pages.
 const PublicOnly = ({ children }) => {
@@ -29,12 +32,16 @@ const PublicOnly = ({ children }) => {
 // One router for the lifetime of the app: recreating a data router when auth
 // state changes can remount <Navigate> and cause redirect loops.
 const router = createBrowserRouter([
+    {
+        element: <RootScrollLayout />,
+        children: [
     { path: "/login", element: <PublicOnly><Login /></PublicOnly> },
     { path: "/register", element: <PublicOnly><Register /></PublicOnly> },
     { path: "/forgot-password", element: <ForgotPassword /> },
     // The password-reset email currently links to /forgetpassword/resetpassword.
     { path: "/forgetpassword/resetpassword", element: <ResetPassword /> },
     { path: "/reset-password", element: <ResetPassword /> },
+    { path: "/profiles/:id", element: <PublicProfile /> },
     {
         path: "/",
         element: <ProtectedRoute />,
@@ -48,6 +55,7 @@ const router = createBrowserRouter([
                     { path: "doctors/:doctorId", element: <DoctorDetails /> },
                     { path: "doctors/:doctorId/book", element: <BookAppointment /> },
                     { path: "appointments", element: <Appointments /> },
+                    { path: "history", element: <PatientHistory /> },
                     { path: "profile", element: <Profile /> },
                     { path: "notifications", element: <Notifications /> },
                     {
@@ -66,6 +74,8 @@ const router = createBrowserRouter([
         ],
     },
     { path: "*", element: <Navigate to="/" replace /> },
+        ],
+    },
 ]);
 
 const Routes = () => <RouterProvider router={router} />;

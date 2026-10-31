@@ -1,32 +1,25 @@
 import React, { useEffect, useCallback, useState, useRef } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { deletePost, deletePostMedia, getLatestDraft, savePostDraft, updatePost, uploadPostMedia, useCreatePost, useDeletePost, useGetPosts } from "../api/community.api";
+import { useDeletePost, useGetPosts } from "../api/community.api";
 import { getMyChatRooms } from "../api/chat.api";
 import { getApiErrorMessage } from "../api/client";
 import toast from "react-hot-toast";
 import { PostSkeleton } from "../components/ui/PostSkeleton";
-import { CreatePostModal } from "../components/ui/CreatePostModal";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Post } from "../components/ui/Post";
 import { useAuth } from "../auth/authProvider";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiFilter, FiMessageCircle, FiPlus, FiTrendingUp, FiUsers } from "react-icons/fi";
+import { FiFilter, FiMessageCircle, FiTrendingUp, FiUsers } from "react-icons/fi";
 import { FilterationComponent } from "../components/ui/FilterationComponent";
-import { useUserProfile } from "../context/profileContext";
 
 export const Forums = () => {
     const { isLoading, error, data, setData, page, hasMore, execute, reset } =
         useGetPosts();
     const { isLoadingDelete, execute: executeDelete } = useDeletePost();
     const navigate = useNavigate();
-    const location = useLocation();
     const { userId, roles } = useAuth();
     const canPostDoctorsOnly = (roles || []).some((role) => typeof role === "string" && ["doctor", "admin"].includes(role.toLowerCase()));
-    const { userProfileData } = useUserProfile();
-    const [isModalVisible, setModalVisible] = useState(false);
-    const [latestDraft, setLatestDraft] = useState(null);
     const [groupOptions, setGroupOptions] = useState([]);
-    const [isPublishing, setPublishing] = useState(false);
     const [isFilterVisible, setFilterVisible] = useState(false);
     const [feedSort, setFeedSort] = useState("recent");
     const sortedPosts = React.useMemo(() => [...(data || [])].sort((left, right) => {
@@ -97,19 +90,6 @@ export const Forums = () => {
         setFilterVisible((prevState) => !prevState);
     };
 
-    const handleAddPostClick = () => setModalVisible(true);
-    const handleCloseModal = () => setModalVisible(false);
-
-    useEffect(() => {
-        if (location.state?.openCreatePost) {
-            setModalVisible(true);
-            navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
-        }
-    }, [location.key, location.pathname, location.search, location.state, navigate]);
-
-    const { isLoading: isCreatePostLoading, execute: createPostExecute } =
-        useCreatePost();
-
     useEffect(() => {
         if (!userId) {
             setGroupOptions([]);
@@ -134,68 +114,10 @@ export const Forums = () => {
         };
     }, [userId]);
 
-    useEffect(() => {
-        if (!isModalVisible || !userId) return undefined;
-
-        let active = true;
-        getLatestDraft()
-            .then((draft) => {
-                if (active) setLatestDraft(draft);
-            })
-            .catch(() => {
-                if (active) setLatestDraft(null);
-            });
-
-        return () => {
-            active = false;
-        };
-    }, [isModalVisible, userId]);
-
-    const handleCreatePost = async (payload, draftId) => {
-        try {
-            if (draftId) {
-                setPublishing(true);
-                await updatePost(draftId, { ...payload, isDraft: false });
-            } else {
-                await createPostExecute(payload);
-            }
-            setLatestDraft(null);
-            const nextFilters = {
-                fullname: "",
-                title: "",
-                content: "",
-                from: "",
-                to: "",
-                showConfessions: Boolean(payload.isAnonymous),
-            };
-            reset();
-            setFilters(nextFilters);
-            await execute(1, 20, nextFilters);
-            setModalVisible(false);
-            toast.success(payload.isAnonymous ? "Anonymous post published under Confessions" : "Post created successfully");
-        } catch (e) {
-            toast.error(getApiErrorMessage(e, "Could not create your post. Please try again."), {
-                duration: 4000,
-                position: "top-center",
-                className: "text-lg text-primary",
-            });
-            throw e;
-        } finally {
-            setPublishing(false);
-        }
-    };
-
-    const handleSaveDraft = async (payload, draftId) => {
-        const saved = await savePostDraft(payload, draftId);
-        if (saved?.id) setLatestDraft(saved);
-        toast.success("Draft saved to your account");
-        return saved;
-    };
-
-    const handleDiscardDraft = async (draftId) => {
-        if (draftId) await deletePost(draftId);
-        setLatestDraft(null);
-    };
+    const refreshFeed = useCallback(async () => {
+        reset();
+        await execute(1, 20, filters);
+    }, [execute, filters, reset]);
 
     const handleFilter = (appliedFilters) => {
         setFilters(appliedFilters);
@@ -238,19 +160,11 @@ export const Forums = () => {
                                     <span className="inline-flex items-center gap-2"><FiTrendingUp className="text-primary-800" aria-hidden="true" /><strong className="text-slate-900">{discussedCount}</strong> with replies</span>
                                 </div>
                             </div>
-                            <button type="button" className="btn btn-primary shrink-0 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" onClick={handleAddPostClick}><FiPlus aria-hidden="true" /> Start a discussion</button>
                         </div>
                     </section>
 
                     <div className="grid grid-cols-1 items-start gap-5 overflow-x-hidden lg:grid-cols-12 lg:gap-6">
                         <section className="min-w-0 lg:col-span-8" aria-label="Community posts">
-                            <div className="mb-4 rounded-2xl border border-neutral-200 bg-base-100 p-3 shadow-sm sm:p-4">
-                                <div className="flex items-center gap-3">
-                                    {userProfileData?.photoUrl ? <img src={userProfileData.photoUrl} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" /> : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary">{userProfileData?.firstName?.[0] || "N"}</span>}
-                                    <button type="button" className="min-w-0 flex-1 rounded-xl bg-base-200/70 px-4 py-3 text-left text-sm text-slate-600 transition hover:bg-base-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" onClick={handleAddPostClick}>Share something helpful with your peers…</button>
-                                    <button type="button" className="btn btn-primary btn-sm shrink-0" onClick={handleAddPostClick}><FiPlus aria-hidden="true" /><span className="hidden sm:inline">Post</span></button>
-                                </div>
-                            </div>
                             <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
                                 <div>
                                     <h2 className="text-lg font-bold text-slate-900">Community feed</h2>
@@ -276,9 +190,8 @@ export const Forums = () => {
                             {!isLoading && data.length === 0 && (
                                 <div className="rounded-2xl border border-dashed border-neutral-300 bg-base-100 px-6 py-14 text-center shadow-sm">
                                     <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-2xl text-primary"><FiMessageCircle aria-hidden="true" /></span>
-                                    <h3 className="mt-4 text-lg font-bold text-slate-900">The conversation starts here</h3>
-                                    <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-slate-600">Be the first to share a perspective, ask a question, or start a useful discussion with your peers.</p>
-                                    <button type="button" className="btn btn-primary btn-sm mt-5" onClick={handleAddPostClick}><FiPlus aria-hidden="true" /> Create the first post</button>
+                                    <h3 className="mt-4 text-lg font-bold text-slate-900">No discussions yet</h3>
+                                    <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-slate-600">Community discussions will appear here when they are published.</p>
                                 </div>
                             )}
                             {sortedPosts.length > 0 && (
@@ -297,14 +210,9 @@ export const Forums = () => {
                                                 isLoadingDelete={
                                                     isLoadingDelete
                                                 }
-                                                setData={async () => {
-                                                    reset();
-                                                    await execute(
-                                                        1,
-                                                        50,
-                                                        filters
-                                                    );
-                                                }}
+                                                onRefresh={refreshFeed}
+                                                groups={groupOptions}
+                                                canPostDoctorsOnly={canPostDoctorsOnly}
                                             />
                                             {isLoading &&
                                                 index === data.length - 1 && (
@@ -353,20 +261,6 @@ export const Forums = () => {
                                 </section>
                         </aside>
                     </div>
-                    <CreatePostModal
-                        isVisible={isModalVisible}
-                        onClose={handleCloseModal}
-                        onCreate={handleCreatePost}
-                        loading={isCreatePostLoading || isPublishing}
-                        onUploadMedia={uploadPostMedia}
-                        onDeleteMedia={deletePostMedia}
-                        onSaveDraft={handleSaveDraft}
-                        onDiscardDraft={handleDiscardDraft}
-                        groups={groupOptions}
-                        initialDraft={latestDraft}
-                        canPostDoctorsOnly={canPostDoctorsOnly}
-                        currentUserId={userId}
-                    />
                 </InfiniteScroll>
             </motion.div>
         </>
@@ -379,7 +273,9 @@ const AnimatedPost = ({
     handleDeletePost,
     userId,
     isLoadingDelete,
-    setData,
+    onRefresh,
+    groups,
+    canPostDoctorsOnly,
 }) => {
     const [ref, isIntersecting] = useInView({ threshold: 0.1 });
 
@@ -414,7 +310,10 @@ const AnimatedPost = ({
                 commentCount={post.commentsCount}
                 likesCount={post.likesCount}
                 isLikedByCurrentUser={post.isLikedByCurrentUser}
-                setData={setData}
+                setData={onRefresh}
+                postData={post}
+                groups={groups}
+                canPostDoctorsOnly={canPostDoctorsOnly}
                 currentUserId={userId}
                 handleDelete={handleDeletePost}
                 postDeletionLoading={isLoadingDelete}

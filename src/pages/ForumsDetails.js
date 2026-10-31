@@ -1,8 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDeletePost, useGetPostById } from "../api/community.api";
 import { PostSkeleton } from "../components/ui/PostSkeleton";
 import { Post } from "../components/ui/Post";
 import { useAuth } from "../auth/authProvider";
+import { getMyChatRooms } from "../api/chat.api";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -16,7 +17,8 @@ export const ForumsDetails = () => {
     const postRef = useRef(null);
 
     const { id } = useParams();
-    const { userId } = useAuth();
+    const { userId, roles } = useAuth();
+    const [groupOptions, setGroupOptions] = useState([]);
 
     useEffect(() => {
         const hash = window.location.hash;
@@ -28,6 +30,21 @@ export const ForumsDetails = () => {
             }
         }
     }, []);
+
+    useEffect(() => {
+        if (!userId) return undefined;
+        let active = true;
+        getMyChatRooms()
+            .then((rooms) => {
+                if (active) setGroupOptions(rooms.map((room) => ({ id: room.id, label: room.name })));
+            })
+            .catch(() => {
+                if (active) setGroupOptions([]);
+            });
+        return () => {
+            active = false;
+        };
+    }, [userId]);
 
     useEffect(() => {
         const postId = Number(id);
@@ -73,6 +90,9 @@ export const ForumsDetails = () => {
                     image={post.photoUrl}
                     postPhoto={post.postPhotoUrl}
                     media={post.media}
+                    postData={post}
+                    groups={groupOptions}
+                    canPostDoctorsOnly={(roles || []).some((role) => typeof role === "string" && ["doctor", "admin"].includes(role.toLowerCase()))}
                     isOwnPost={post.isOwnPost}
                     commentCount={post.commentsCount}
                     likesCount={post.likesCount}
