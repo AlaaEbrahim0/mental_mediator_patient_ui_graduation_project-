@@ -1,15 +1,25 @@
 import React, { useEffect, useCallback, useState, useRef } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useDeletePost, useGetPosts } from "../api/community.api";
+import {
+    createPost,
+    deletePost,
+    deletePostMedia,
+    getLatestDraft,
+    updatePost,
+    uploadPostMedia,
+    useDeletePost,
+    useGetPosts,
+} from "../api/community.api";
 import { getMyChatRooms } from "../api/chat.api";
 import { getApiErrorMessage } from "../api/client";
 import toast from "react-hot-toast";
 import { PostSkeleton } from "../components/ui/PostSkeleton";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../components/ui/Post";
+import { CreatePostModal } from "../components/ui/CreatePostModal";
 import { useAuth } from "../auth/authProvider";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiFilter, FiMessageCircle, FiTrendingUp, FiUsers } from "react-icons/fi";
+import { FiFilter, FiMessageCircle, FiPlus, FiTrendingUp, FiUsers } from "react-icons/fi";
 import { FilterationComponent } from "../components/ui/FilterationComponent";
 
 export const Forums = () => {
@@ -22,6 +32,10 @@ export const Forums = () => {
     const [groupOptions, setGroupOptions] = useState([]);
     const [isFilterVisible, setFilterVisible] = useState(false);
     const [feedSort, setFeedSort] = useState("recent");
+    const [isComposerOpen, setComposerOpen] = useState(false);
+    const [isCreatingPost, setCreatingPost] = useState(false);
+    const [isDraftLoading, setDraftLoading] = useState(false);
+    const [latestDraft, setLatestDraft] = useState(null);
     const sortedPosts = React.useMemo(() => [...(data || [])].sort((left, right) => {
         if (feedSort === "discussed") return (right.commentsCount || 0) - (left.commentsCount || 0);
         return new Date(right.postedOn || 0) - new Date(left.postedOn || 0);
@@ -119,6 +133,61 @@ export const Forums = () => {
         await execute(1, 20, filters);
     }, [execute, filters, reset]);
 
+    const openComposer = useCallback(async () => {
+        if (isDraftLoading) return;
+
+        setDraftLoading(true);
+        try {
+            setLatestDraft(await getLatestDraft());
+        } catch {
+            setLatestDraft(null);
+            toast.error(
+                "Your saved draft could not be loaded. You can still write a new post."
+            );
+        } finally {
+            setDraftLoading(false);
+            setComposerOpen(true);
+        }
+    }, [isDraftLoading]);
+
+    const handleCreatePost = async (payload, draftId) => {
+        setCreatingPost(true);
+        try {
+            const created = draftId
+                ? await updatePost(draftId, { ...payload, isDraft: false })
+                : await createPost({ ...payload, isDraft: false });
+
+            toast.success("Your post has been published.");
+            setLatestDraft(null);
+            refreshFeed().catch(() =>
+                toast.error(
+                    "Your post was published, but the feed could not refresh. Reload to see it."
+                )
+            );
+            return created;
+        } catch (requestError) {
+            toast.error(
+                getApiErrorMessage(
+                    requestError,
+                    "Could not publish your post. Please try again."
+                )
+            );
+            throw requestError;
+        } finally {
+            setCreatingPost(false);
+        }
+    };
+
+    const handleSaveDraft = async (payload, draftId) =>
+        draftId
+            ? updatePost(draftId, { ...payload, isDraft: true })
+            : createPost({ ...payload, isDraft: true });
+
+    const handleDiscardDraft = async (draftId) => {
+        await deletePost(draftId);
+        setLatestDraft(null);
+    };
+
     const handleFilter = (appliedFilters) => {
         setFilters(appliedFilters);
         reset();
@@ -148,7 +217,7 @@ export const Forums = () => {
                     scrollThreshold={0.7}
                     scrollableTarget="scrollableDiv"
                 >
-                    <section className="relative mb-5 overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/10 via-base-100 to-sky-50 p-5 shadow-sm sm:mb-6 sm:p-7 lg:p-8">
+                    <section className="relative mb-5 overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/10 via-base-100 to-base-200 p-5 shadow-sm sm:mb-6 sm:p-7 lg:p-8">
                         <div className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
                         <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
                             <div className="max-w-2xl">
@@ -170,7 +239,22 @@ export const Forums = () => {
                                     <h2 className="text-lg font-bold text-slate-900">Community feed</h2>
                                     <p className="text-sm text-slate-600">Perspectives and updates from your peers</p>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                    {userId && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm btn-primary"
+                                            onClick={openComposer}
+                                            disabled={isDraftLoading}
+                                        >
+                                            {isDraftLoading ? (
+                                                <span className="loading loading-spinner loading-xs" aria-hidden="true" />
+                                            ) : (
+                                                <FiPlus aria-hidden="true" />
+                                            )}
+                                            New post
+                                        </button>
+                                    )}
                                     <div className="join rounded-xl border border-neutral-200 bg-base-100 p-1" aria-label="Sort community feed">
                                         <button type="button" className={`join-item btn btn-xs border-0 ${feedSort === "recent" ? "bg-primary/10 text-primary-900" : "btn-ghost text-slate-600"}`} aria-pressed={feedSort === "recent"} onClick={() => setFeedSort("recent")}>Recent</button>
                                         <button type="button" className={`join-item btn btn-xs border-0 ${feedSort === "discussed" ? "bg-primary/10 text-primary-900" : "btn-ghost text-slate-600"}`} aria-pressed={feedSort === "discussed"} onClick={() => setFeedSort("discussed")}>Discussed</button>
@@ -262,6 +346,20 @@ export const Forums = () => {
                         </aside>
                     </div>
                 </InfiniteScroll>
+                <CreatePostModal
+                    isVisible={isComposerOpen}
+                    onClose={() => setComposerOpen(false)}
+                    onCreate={handleCreatePost}
+                    loading={isCreatingPost}
+                    onUploadMedia={uploadPostMedia}
+                    onDeleteMedia={deletePostMedia}
+                    onSaveDraft={handleSaveDraft}
+                    onDiscardDraft={handleDiscardDraft}
+                    groups={groupOptions}
+                    initialDraft={latestDraft}
+                    canPostDoctorsOnly={canPostDoctorsOnly}
+                    currentUserId={userId}
+                />
             </motion.div>
         </>
     );

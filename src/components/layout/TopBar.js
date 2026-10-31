@@ -3,6 +3,7 @@ import { FaBars } from "react-icons/fa";
 import { FiBell, FiLogOut, FiSearch, FiUser } from "react-icons/fi";
 import { useNotifications } from "../../context/notificationsContext";
 import { useUserProfile } from "../../context/profileContext";
+import { ThemeToggle } from "../ui/ThemeToggle";
 import { Notification } from "../ui/Notification";
 
 const imagesDir = process.env.REACT_APP_IMAGE_BASE_URL;
@@ -14,9 +15,8 @@ export const TopBar = ({ title = "Nexus", toggleSidebar, sidebarOpen = false }) 
     const displayName = [userProfileData?.firstName, userProfileData?.lastName]
         .filter(Boolean)
         .join(" ") || "Your profile";
-    // The chat rooms live under /community/rooms. The "Create post" button
-    // belongs to the forums page only, so it is hidden across the whole
-    // community section.
+    // The Find a doctor shortcut is hidden in community and doctor views;
+    // the right-hand actions below always keep the profile menu aligned.
     const isCommunityView = location.pathname.toLowerCase().startsWith("/community") || location.pathname.toLowerCase().startsWith("/forums");
 
     const isDoctorsView = location.pathname.toLowerCase().startsWith("/doctors");
@@ -41,19 +41,21 @@ export const TopBar = ({ title = "Nexus", toggleSidebar, sidebarOpen = false }) 
             <span className="hidden h-6 border-l border-neutral-200 lg:block" aria-hidden="true" />
             <h1 className="hidden min-w-0 truncate text-base font-semibold text-neutral-800 lg:block">{title}</h1>
 
-            {!isCommunityView && !isDoctorsView && <Link to="/doctors" className="ml-auto inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary-700 p-2.5 text-sm font-semibold text-white transition hover:bg-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 sm:px-3 sm:py-2">
+            <div className="ml-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
+            <ThemeToggle />
+            {!isCommunityView && !isDoctorsView && <Link to="/doctors" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary-700 p-2.5 text-sm font-semibold text-white transition hover:bg-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 sm:px-3 sm:py-2">
                 <FiSearch aria-hidden="true" /> <span className="hidden md:inline">Find a doctor</span>
             </Link>}
 
             <Link
                 to="/notifications"
-                className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-xl text-neutral-700 transition hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 md:hidden ${(isCommunityView || isDoctorsView) ? "ml-auto" : ""}`}
+                className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl text-neutral-700 transition hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 md:hidden"
                 aria-label={`View notifications${count ? `, ${count} unread` : ""}`}
             >
                 <FiBell aria-hidden="true" className="text-xl" />
                 {count > 0 && <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-bold leading-none text-white">{count > 99 ? "99+" : count}</span>}
             </Link>
-            <div className={`dropdown dropdown-end hidden shrink-0 md:block ${(isCommunityView || isDoctorsView) ? "ml-auto" : ""}`}>
+            <div className="dropdown dropdown-end hidden shrink-0 md:block">
                 <button type="button" tabIndex={0} className="relative rounded-xl p-2.5 text-neutral-700 transition hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700" aria-label={`Notifications${count ? `, ${count} unread` : ""}`}>
                     <FiBell aria-hidden="true" className="text-xl" />
                     {count > 0 && <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-bold leading-none text-white">{count > 99 ? "99+" : count}</span>}
@@ -83,6 +85,7 @@ export const TopBar = ({ title = "Nexus", toggleSidebar, sidebarOpen = false }) 
                     <li><Link to="/profile" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-neutral-800 hover:bg-neutral-100"><FiUser aria-hidden="true" /> Profile</Link></li>
                     <li><Link to="/logout" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-neutral-800 hover:bg-neutral-100"><FiLogOut aria-hidden="true" /> Sign out</Link></li>
                 </ul>
+            </div>
             </div>
         </header>
     );

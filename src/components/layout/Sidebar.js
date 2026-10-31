@@ -120,10 +120,6 @@ export function Sidebar({ isOpen, setIsOpen }) {
             } lg:translate-x-0`}
             style={{ maxHeight: "100dvh" }}
         >
-            <div className="flex shrink-0 items-center gap-3 border-b border-neutral-200 px-4 py-4">
-                <div className="min-w-0"><p className="text-base font-extrabold tracking-[0.12em] text-neutral-900">NEXUS</p></div>
-            </div>
-
             {isLoading ? (
                 <div className="mx-3 my-4 flex shrink-0 items-center gap-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
                     <div className="skeleton h-11 w-11 shrink-0 rounded-full bg-neutral-200" />

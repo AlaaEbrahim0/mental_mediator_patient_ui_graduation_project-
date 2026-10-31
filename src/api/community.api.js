@@ -71,6 +71,12 @@ export const updatePost = (id, payload = {}) =>
         apiClient.put(`/api/posts/${id}`, buildPostFormData(payload), moderation)
     );
 
+export const createPost = (payload = {}) =>
+    unwrap(apiClient.post("/api/posts", buildPostFormData(payload), moderation));
+
+export const getLatestDraft = () =>
+    unwrap(apiClient.get("/api/posts/drafts/latest")).then((draft) => draft || null);
+
 export const deletePostMedia = (url) =>
     unwrap(apiClient.delete("/api/posts/media", { params: { url } }));
 export const uploadPostMedia = (file, onUploadProgress) => {
@@ -147,6 +153,10 @@ export function useGetPostById() {
 
 export function useUpdatePost() {
     return useEndpoint(updatePost);
+}
+
+export function useCreatePost() {
+    return useEndpoint(createPost);
 }
 
 export function useDeletePost() {
