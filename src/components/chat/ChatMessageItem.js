@@ -70,9 +70,38 @@ export const ChatMessageItem = ({
                         This message was removed.
                     </p>
                 ) : (
-                    <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-neutral-800">
-                        {message.content}
-                    </p>
+                    <>
+                        {message.mediaUrl && (
+                            message.mediaType === "video" ? (
+                                <video
+                                    src={message.mediaUrl}
+                                    controls
+                                    preload="metadata"
+                                    aria-label="Video shared in this room"
+                                    className="mt-2 max-h-80 w-full max-w-md rounded-xl border border-neutral-200 bg-black"
+                                />
+                            ) : (
+                                <a
+                                    href={message.mediaUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-2 block max-w-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 rounded-xl"
+                                >
+                                    <img
+                                        src={message.mediaUrl}
+                                        alt={message.content && message.content.trim() ? message.content.trim() : "Photo shared in this room"}
+                                        loading="lazy"
+                                        className="w-full rounded-xl border border-neutral-200 object-cover"
+                                    />
+                                </a>
+                            )
+                        )}
+                        {message.content && (
+                            <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-neutral-800">
+                                {message.content}
+                            </p>
+                        )}
+                    </>
                 )}
 
                 {(canDelete || canReport) && (

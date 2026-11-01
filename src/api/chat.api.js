@@ -181,6 +181,27 @@ export const removeChatRoomCover = (roomId) =>
     request(apiClient.delete(`/api/chat/rooms/${roomId}/cover`));
 
 /**
+ * Uploads one image or video for a message in this room and resolves to
+ * { url, type }. The field name "file" is part of the API contract. onProgress
+ * receives 0-100 so the composer can show a real upload bar.
+ */
+export const uploadChatRoomMedia = (roomId, file, onProgress) => {
+    const form = new FormData();
+    form.append("file", file);
+
+    return apiClient
+        .post(`/api/chat/rooms/${roomId}/media`, form, {
+            // A 20 MB video on a slow link outlasts the client default.
+            timeout: 120000,
+            onUploadProgress: (event) => {
+                if (!onProgress || !event.total) return;
+                onProgress(Math.round((event.loaded * 100) / event.total));
+            },
+        })
+        .then((response) => response.data);
+};
+
+/**
  * Read the machine readable code out of an RFC 7807 chat problem body.
  *
  * The API puts the code in extensions.errors[].code, for example
@@ -223,6 +244,8 @@ export const getChatErrorMessage = (error, fallback = "Something went wrong. Ple
             return "Pick a start time in the future, no more than 90 days ahead.";
         case "Chat.InvalidRoomCover":
             return "Choose an image file for the room cover.";
+        case "Chat.InvalidMessageMedia":
+            return "That file could not be attached. Choose an image or video and try again.";
         case "Chat.CreateRoomForbidden":
             return "Your account cannot create rooms.";
         case "Chat.OwnerCannotLeave":
@@ -909,7 +932,7 @@ export function useChatMessages(roomId, enabled = true) {
      * of creating a second one. The temporary id is negative so it can never
      * collide with a server id.
      */
-    const addOptimistic = useCallback((content, sender = {}) => {
+    const addOptimistic = useCallback((content, sender = {}, media = {}) => {
         if (!enabledRef.current) return null;
 
         temporaryIdRef.current -= 1;
@@ -922,6 +945,8 @@ export function useChatMessages(roomId, enabled = true) {
             senderDisplayName: sender.displayName || "You",
             senderIsDoctor: Boolean(sender.isDoctor),
             content,
+            mediaUrl: media.url || null,
+            mediaType: media.type || null,
             sentAtUtc: new Date().toISOString(),
             isDeleted: false,
             pending: true,
