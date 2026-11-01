@@ -130,7 +130,7 @@ export function Sidebar({ isOpen, setIsOpen }) {
             id="primary-navigation"
             aria-label="Primary navigation"
             aria-hidden={isMobile && !isOpen}
-            className={`fixed left-0 top-0 z-40 flex h-screen h-[100dvh] w-60 shrink-0 flex-col overflow-hidden border-r border-neutral-200 bg-base-100 text-neutral-800 shadow-xl transition-all duration-300 ease-in-out lg:sticky lg:top-0 lg:w-60 lg:shadow-none ${
+            className={`fixed left-0 top-0 z-50 flex h-screen h-[100dvh] w-60 shrink-0 flex-col overflow-hidden border-r border-neutral-200 bg-base-100 text-neutral-800 shadow-xl transition-all duration-300 ease-in-out lg:sticky lg:top-0 lg:z-auto lg:w-60 lg:shadow-none ${
                 isOpen ? "translate-x-0" : "-translate-x-full"
             } lg:translate-x-0`}
             style={{ maxHeight: "100dvh" }}
