@@ -21,7 +21,7 @@ export const ProtectedRoute = () => {
     const activeRoles = roles?.length > 0 ? roles : getRoles();
 
     if (!activeToken || !hasPatientRole(activeRoles)) {
-        return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+        return <Navigate to="/welcome" replace state={{ from: location.pathname }} />;
     }
     return <Outlet />;
 };

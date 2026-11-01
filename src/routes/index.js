@@ -22,11 +22,19 @@ import { ChatRooms } from "../pages/ChatRooms";
 import { ChatRoom } from "../pages/ChatRoom";
 import { ProtectedRoute, hasPatientRole } from "./ProtectedRoute";
 import { RootScrollLayout } from "../components/routing/ScrollManager";
+import { Landing } from "../pages/landing/Landing";
 
 // Signed-in patients skip the public auth pages.
 const PublicOnly = ({ children }) => {
     const { token, roles } = useAuth();
     return token && hasPatientRole(roles) ? <Navigate to="/" replace /> : children;
+};
+
+// Marketing page for signed-out visitors. A signed-in patient who reaches this
+// route is sent to their dashboard rather than shown a second "get started".
+const LandingOnly = () => {
+    const { token, roles } = useAuth();
+    return token && hasPatientRole(roles) ? <Navigate to="/" replace /> : <Landing />;
 };
 
 // One router for the lifetime of the app: recreating a data router when auth
@@ -36,6 +44,7 @@ const router = createBrowserRouter([
         element: <RootScrollLayout />,
         children: [
     { path: "/login", element: <PublicOnly><Login /></PublicOnly> },
+    { path: "/welcome", element: <LandingOnly /> },
     { path: "/register", element: <PublicOnly><Register /></PublicOnly> },
     { path: "/forgot-password", element: <ForgotPassword /> },
     // The password-reset email currently links to /forgetpassword/resetpassword.
@@ -73,7 +82,7 @@ const router = createBrowserRouter([
             },
         ],
     },
-    { path: "*", element: <Navigate to="/" replace /> },
+    { path: "*", element: <Navigate to="/welcome" replace /> },
         ],
     },
 ]);
