@@ -14,7 +14,7 @@ name: Shared UI drift check
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - '.shared-ui.json'
       - 'scripts/shared-ui-sync.mjs'
