@@ -122,16 +122,7 @@ hub URL, so the trimming is intentional and should be kept.
 
 ## Shared UI
 
-This portal vendors **25 files** from [nexus-shared-ui](https://github.com/AlaaEbrahim0/nexus-shared-ui): `tailwind.config.js`, `src/index.css`, the UI primitives under `src/components/ui/` (plus the explicit `ui/community.js` entry), the Axios client, auth/session helpers, `notificationsContext`, `profileUtils`, `useChatHub`, and `convertUtcToRelativeTime`.
-
-> **Pending upstream re-pin.** The content-safety modules added for the slow-moderation
-> handling - `src/utils/moderationState.js`, `src/hooks/useModerationStage.js`, and the
-> rewritten `src/utils/utcToRelativeTime.js` - are registered in `.shared-ui.json` and
-> copied into this portal, but they are not yet in the pinned upstream commit of
-> nexus-shared-ui. `npm run shared-ui:check` will therefore report drift here until that
-> repository is committed and pushed and this pin is re-bumped to the new sha:
-> `npm run shared-ui:sync -- --ref <sha> && npm run shared-ui:sync && npm run shared-ui:check`.
-> Push shared-ui first, then the portals - not the other way round.
+This portal vendors **45 files** from [nexus-shared-ui](https://github.com/AlaaEbrahim0/nexus-shared-ui) at the commit pinned in `.shared-ui.json`: `tailwind.config.js`, `src/index.css`, the UI primitives under `src/components/ui/` (plus the explicit `ui/community.js` entry), the Axios client, `chat.api.js`, auth/session helpers, `notificationsContext`, `profileUtils`, `useChatHub`, the shared chat surface (`ChatComposer`, `CreateRoomModal`, `ReportMessageModal`, `RoomReportsPanel`, `RoomCard`, `RoomSettingsModal`, `JoinRoomModal`, `RoomInviteModal`, `RoomInvitationList`, `roomsFilter`), `src/utils/chat.js`, the content-safety modules (`moderationState.js`, `useModerationStage.js`, `utcToRelativeTime.js`), `ProfileView`, `MediaGallery`, `PatientHistoryTimeline`, and `ScrollManager`. `npm run shared-ui:check` reports `In sync`.
 
 `src/components/ui/index.js` re-exports only the primitives. The community components are reached
 through `src/components/ui/community.js` or by direct path, because they import `react-markdown`
@@ -150,8 +141,8 @@ Do not edit `src/components/ui/*` here — those copies are overwritten by the n
 the file in `nexus-shared-ui`, then re-pin and sync.
 
 `src/context/profileContext.js` is **not** shared: the patient profile shape differs from the
-doctor's, so this portal owns it. The doctor-only profile components
-(`ProfileView`, `CertificateModal`, `QualificationModal`) are intentionally absent here.
+doctor's, so this portal owns it. `ProfileView` and `profileUtils` are shared (vendored here too);
+the doctor-only `CertificateModal` and `QualificationModal` are intentionally absent here.
 
 ---
 
