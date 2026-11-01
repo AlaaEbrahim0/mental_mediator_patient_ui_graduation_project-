@@ -13,6 +13,11 @@ import {
 import { FiArrowRight, FiCheck, FiMenu, FiX } from "react-icons/fi";
 import { Button } from "../../components/ui";
 import { Reveal, useStaggerVariants } from "./Reveal";
+import { Orb3D, OrbitRings, Tilt3D } from "./Depth";
+import { CommunityFeed } from "./CommunityFeed";
+import { BookingDemo } from "./BookingDemo";
+import { RoomsShowcase } from "./RoomsShowcase";
+import { COMMUNITY_STATS } from "./landingData";
 
 const imagesDir = process.env.REACT_APP_IMAGE_BASE_URL || "/images";
 
@@ -31,7 +36,8 @@ const heroFade = (reduceMotion, delay = 0) =>
 
 const NAV_LINKS = [
     { href: "#features", label: "Features" },
-    { href: "#how", label: "How it works" },
+    { href: "#booking", label: "Booking" },
+    { href: "#rooms", label: "Rooms" },
     { href: "#community", label: "Community" },
     { href: "#trust", label: "Safety" },
 ];
@@ -56,24 +62,6 @@ const FEATURES = [
         icon: BsShieldCheck,
         title: "Moderated by default",
         body: "Every post and message is screened before it lands. Harmful content is stopped, not flagged after the fact.",
-    },
-];
-
-const STEPS = [
-    {
-        step: "01",
-        title: "Create your account",
-        body: "Sign up with email or Google. Choose the patient portal and you are in — no card required.",
-    },
-    {
-        step: "02",
-        title: "Find the right professional",
-        body: "Filter by speciality, session length and availability, then read profiles before you commit.",
-    },
-    {
-        step: "03",
-        title: "Start the conversation",
-        body: "Book your first session, message your care team, and settle into a community that supports you.",
     },
 ];
 
@@ -220,16 +208,9 @@ export const Landing = () => {
                 <section ref={heroRef} className="relative overflow-hidden">
                     {/* Ambient brand glow — decorative only */}
                     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-                        <motion.div
-                            className="absolute -left-24 -top-24 h-[28rem] w-[28rem] rounded-full bg-primary-200/40 blur-3xl"
-                            animate={reduceMotion ? undefined : { scale: [1, 1.12, 1], opacity: [0.45, 0.65, 0.45] }}
-                            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-                        />
-                        <motion.div
-                            className="absolute -right-32 top-32 h-[24rem] w-[24rem] rounded-full bg-primary-400/25 blur-3xl"
-                            animate={reduceMotion ? undefined : { scale: [1.1, 1, 1.1], opacity: [0.35, 0.55, 0.35] }}
-                            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-                        />
+                        <Orb3D className="-left-24 -top-24" size={460} hue="primary" duration={16} />
+                        <Orb3D className="-right-32 top-32" size={400} hue="teal" duration={20} delay={2} />
+                        <Orb3D className="bottom-0 left-1/3" size={300} hue="rose" duration={24} delay={1} />
                     </div>
 
                     <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:pb-28 lg:pt-20">
@@ -308,14 +289,17 @@ export const Landing = () => {
                             transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
                             className="relative mx-auto w-full max-w-md lg:max-w-none"
                         >
-                            <div className="relative overflow-hidden rounded-[2rem] border border-neutral-200 bg-gradient-to-br from-primary-50 via-base-100 to-primary-100/60 p-2 shadow-2xl shadow-primary-900/10">
-                                <img
-                                    src={`${imagesDir}/loginPhoto.png`}
-                                    alt=""
-                                    className="h-full w-full rounded-[1.6rem] object-contain"
-                                    loading="eager"
-                                />
-                            </div>
+                            <OrbitRings className="-left-10 -top-10 hidden lg:block" size={340} />
+                            <Tilt3D className="relative rounded-[2rem]" intensity={8} lift={12}>
+                                <div className="relative overflow-hidden rounded-[2rem] border border-neutral-200 bg-gradient-to-br from-primary-50 via-base-100 to-primary-100/60 p-2 shadow-2xl shadow-primary-900/10">
+                                    <img
+                                        src={`${imagesDir}/loginPhoto.png`}
+                                        alt=""
+                                        className="h-full w-full rounded-[1.6rem] object-contain"
+                                        loading="eager"
+                                    />
+                                </div>
+                            </Tilt3D>
 
                             {/* Floating stat cards */}
                             <motion.div
@@ -324,8 +308,8 @@ export const Landing = () => {
                                 transition={{ duration: 0.6, delay: 0.6 }}
                                 className="absolute -left-3 bottom-8 hidden rounded-2xl border border-neutral-200 bg-base-100 px-4 py-3 shadow-xl sm:block"
                             >
-                                <p className="text-xs font-medium text-neutral-600">Sessions booked</p>
-                                <p className="text-lg font-bold text-neutral-900">2,400+</p>
+                                <p className="text-xs font-medium text-neutral-600">Live threads</p>
+                                <p className="text-lg font-bold text-neutral-900">{COMMUNITY_STATS[0].value}</p>
                             </motion.div>
 
                             <motion.div
@@ -388,39 +372,96 @@ export const Landing = () => {
                     </div>
                 </section>
 
-                {/* ---------------- How it works ---------------- */}
-                <section id="how" className="scroll-mt-20 py-20">
+                {/* ---------------- Live numbers ---------------- */}
+                <section className="border-y border-neutral-200 bg-canvas py-10">
+                    <div className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-6 px-4 sm:px-6 lg:grid-cols-4">
+                        {COMMUNITY_STATS.map((stat, index) => (
+                            <Reveal key={stat.label} delay={index * 0.08}>
+                                <div>
+                                    <p className="text-3xl font-bold tracking-tight text-primary-800 sm:text-4xl">
+                                        {stat.value}
+                                    </p>
+                                    <p className="mt-1 text-sm font-semibold text-neutral-900">{stat.label}</p>
+                                    <p className="text-xs text-neutral-500">{stat.hint}</p>
+                                </div>
+                            </Reveal>
+                        ))}
+                    </div>
+                </section>
+
+                {/* ---------------- Booking ---------------- */}
+                <section id="booking" className="scroll-mt-20 border-t border-neutral-200 bg-base-100 py-20">
+                    <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+                        <Reveal className="max-w-2xl">
+                            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary-700">
+                                Booking
+                            </p>
+                            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+                                Try the booking flow, right here
+                            </h2>
+                            <p className="mt-4 text-lg leading-relaxed text-neutral-600">
+                                Pick a clinician and the days below are the ones they actually have open —
+                                pulled from the same availability the app uses. No mock calendar.
+                            </p>
+                        </Reveal>
+
+                        <div className="mt-10 grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+                            <Reveal>
+                                <BookingDemo />
+                            </Reveal>
+                            <Reveal delay={0.12} className="lg:pt-4">
+                                <h3 className="text-lg font-bold text-neutral-900">Why it works this way</h3>
+                                <ul className="mt-4 space-y-4">
+                                    {[
+                                        {
+                                            title: "Availability is owned by the server",
+                                            body: "Weekly hours, time off, session length and existing bookings are combined server-side. The page never invents a slot.",
+                                        },
+                                        {
+                                            title: "The price you see is the price you pay",
+                                            body: "Session length and fee come from the clinician's profile, so the summary cannot drift from what gets charged.",
+                                        },
+                                        {
+                                            title: "Double-booking is locked out",
+                                            body: "Confirmation revalidates availability under a per-clinician lock, so two people cannot take the same slot.",
+                                        },
+                                    ].map((item) => (
+                                        <li key={item.title} className="flex gap-3">
+                                            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-100 text-primary-800">
+                                                <FiCheck aria-hidden="true" className="text-xs" />
+                                            </span>
+                                            <div>
+                                                <p className="text-sm font-bold text-neutral-900">{item.title}</p>
+                                                <p className="mt-1 text-sm leading-relaxed text-neutral-600">
+                                                    {item.body}
+                                                </p>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </Reveal>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ---------------- Rooms ---------------- */}
+                <section id="rooms" className="scroll-mt-20 border-t border-neutral-200 py-20">
                     <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
                         <Reveal className="mx-auto max-w-2xl text-center">
                             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary-700">
-                                How it works
+                                Group rooms
                             </p>
                             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-                                Three steps to feeling supported
+                                Rooms that fit the kind of day you are having
                             </h2>
+                            <p className="mt-4 text-lg leading-relaxed text-neutral-600">
+                                These are the rooms that exist in Nexus today — public peer support,
+                                focused topics, and private spaces you need a key for.
+                            </p>
                         </Reveal>
 
-                        <div className="relative mt-14">
-                            {/* Connecting line on large screens */}
-                            <div
-                                aria-hidden="true"
-                                className="absolute left-0 right-0 top-6 hidden h-px bg-gradient-to-r from-transparent via-primary-300 to-transparent lg:block"
-                            />
-                            <div className="grid gap-10 lg:grid-cols-3 lg:gap-8">
-                                {STEPS.map((item, index) => (
-                                    <Reveal key={item.step} delay={index * 0.12} className="relative">
-                                        <div className="flex flex-col items-start lg:items-center lg:text-center">
-                                            <span className="relative z-10 grid h-12 w-12 place-items-center rounded-full border-2 border-primary-200 bg-base-100 text-sm font-bold text-primary-700 shadow-sm">
-                                                {item.step}
-                                            </span>
-                                            <h3 className="mt-5 text-lg font-bold text-neutral-900">{item.title}</h3>
-                                            <p className="mt-2 max-w-sm text-sm leading-relaxed text-neutral-600">
-                                                {item.body}
-                                            </p>
-                                        </div>
-                                    </Reveal>
-                                ))}
-                            </div>
+                        <div className="mt-12">
+                            <RoomsShowcase />
                         </div>
                     </div>
                 </section>
@@ -464,36 +505,9 @@ export const Landing = () => {
                             </div>
                         </Reveal>
 
-                        {/* Stylised conversation preview */}
+                        {/* Live community feed — real posts from the API */}
                         <Reveal delay={0.15}>
-                            <div className="relative mx-auto w-full max-w-md">
-                                <div className="absolute -inset-4 rounded-[2rem] bg-primary-500/10 blur-2xl" aria-hidden="true" />
-                                <div className="relative space-y-3 rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-                                    {[
-                                        { name: "Layla", text: "First session today. Nervous but glad I booked.", mine: false },
-                                        { name: "Nadia, therapist", text: "That is a big step. I will meet you where you are.", mine: false },
-                                        { name: "You", text: "Thank you both — this already feels less heavy.", mine: true },
-                                    ].map((msg) => (
-                                        <div
-                                            key={msg.text}
-                                            className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                                                msg.mine
-                                                    ? "ml-auto bg-primary-600 text-white"
-                                                    : "bg-white/10 text-[#f1f5f9]"
-                                            }`}
-                                        >
-                                            <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">
-                                                {msg.name}
-                                            </p>
-                                            {msg.text}
-                                        </div>
-                                    ))}
-                                    <div className="flex items-center gap-2 pt-1 text-xs text-[#94a3b8]">
-                                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success-400" />
-                                        Moderated in real time
-                                    </div>
-                                </div>
-                            </div>
+                            <CommunityFeed />
                         </Reveal>
                     </div>
                 </section>

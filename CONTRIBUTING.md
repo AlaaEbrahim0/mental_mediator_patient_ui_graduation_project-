@@ -24,8 +24,7 @@ request silently targets the portal's own origin — the app loads but shows no 
 the first thing to check.
 
 **Vercel preview URLs do not work.** Preview deployment origins are deliberately absent
-from the API's CORS allowlist, so Google sign-in and API calls fail there. This is by
-design, not a bug. Develop on `localhost:3000` (localhost origins *are* allowlisted) or on
+from the API's CORS allowlist, so API calls fail there. This is by design, not a bug. Develop on `localhost:3000` (localhost origins *are* allowlisted) or on
 the production alias.
 
 ## Shared UI sync workflow

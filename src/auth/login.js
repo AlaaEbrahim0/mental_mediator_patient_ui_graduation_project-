@@ -1,16 +1,22 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FcGoogle } from "react-icons/fc";
+import { FiKey } from "react-icons/fi";
 import { signIn, resendConfirmationEmail } from "../api/auth.api";
 import { getApiErrorMessage } from "../api/client";
 import { AuthLayout } from "../components/layout/AuthLayout";
 import { Alert, Button, Input } from "../components/ui";
 import { hasPatientRole } from "../routes/ProtectedRoute";
 import { useAuth } from "./authProvider";
-import { googleSignInUrl } from "./externalSession";
 import { saveSession } from "./session";
 
 const EMAIL_PATTERN = /\S+@\S+\.\S+/;
+
+/**
+ * Recruiter demo account. Mirrors the doctor portal's demo block so reviewers
+ * can step through the same flow on either surface. These are seeded demo
+ * credentials on the public API, not secrets.
+ */
+const DEMO_ACCOUNT = { email: "user@example.com", password: "Password1!" };
 
 const isUnconfirmedEmailError = (error) =>
     error?.response?.data?.errors?.some?.((entry) => entry?.code === "Users.EmailNotConfirmed");
@@ -78,13 +84,6 @@ export const Login = () => {
         }
     };
 
-    // A top-level navigation, not navigate(): the API owns the Google redirect
-    // and comes back to this origin as a browser navigation with a one-time
-    // token, which React Router never sees as its own location change.
-    const startGoogleSignIn = () => {
-        window.location.assign(googleSignInUrl());
-    };
-
     const resend = async () => {
         setResendState("sending");
         try {
@@ -94,6 +93,14 @@ export const Login = () => {
             setResendState("idle");
             setSubmitError(getApiErrorMessage(error, "Could not send the confirmation email."));
         }
+    };
+
+    /** Prefill the demo credentials without submitting, so the reviewer can inspect the form first. */
+    const fillDemoAccount = () => {
+        setValues({ email: DEMO_ACCOUNT.email, password: DEMO_ACCOUNT.password });
+        setErrors({});
+        setSubmitError("");
+        setNeedsConfirmation(false);
     };
 
     return (
@@ -120,6 +127,36 @@ export const Login = () => {
                         )}
                     </Alert>
                 )}
+                <aside
+                    className="rounded-xl border border-primary-200 bg-primary-50/70 p-3.5 sm:p-4"
+                    role="note"
+                    aria-label="Recruiter demo account"
+                >
+                    <div className="flex items-start gap-3">
+                        <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-base-100 text-primary-800 shadow-sm">
+                            <FiKey aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                            <h3 className="text-sm font-bold text-neutral-900">Recruiter demo access</h3>
+                            <p className="mt-0.5 text-xs leading-5 text-neutral-700">
+                                Use this demo account to explore the patient portal.
+                            </p>
+                        </div>
+                    </div>
+                    <dl className="mt-3 grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-2 gap-y-1.5 text-xs sm:text-sm">
+                        <dt className="font-semibold text-neutral-600">Email</dt>
+                        <dd className="min-w-0 break-all font-mono font-medium text-neutral-900">{DEMO_ACCOUNT.email}</dd>
+                        <dt className="font-semibold text-neutral-600">Password</dt>
+                        <dd className="min-w-0 break-all font-mono font-medium text-neutral-900">{DEMO_ACCOUNT.password}</dd>
+                    </dl>
+                    <button
+                        type="button"
+                        onClick={fillDemoAccount}
+                        className="mt-3 inline-flex min-h-9 items-center justify-center rounded-lg border border-primary-700/20 bg-base-100 px-3 text-xs font-semibold text-primary-900 transition-colors hover:bg-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 sm:text-sm"
+                    >
+                        Fill sign-in details
+                    </button>
+                </aside>
                 <Input
                     label="Email"
                     type="email"
@@ -143,15 +180,6 @@ export const Login = () => {
                     <Link to="/forgot-password" className="text-sm font-semibold text-primary-700 hover:underline">Forgot your password?</Link>
                 </div>
                 <Button type="submit" size="lg" fullWidth loading={isSubmitting} loadingText="Signing in…">Sign in</Button>
-                <div className="flex items-center gap-3" aria-hidden="true">
-                    <span className="h-px flex-1 bg-neutral-200" />
-                    <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">or</span>
-                    <span className="h-px flex-1 bg-neutral-200" />
-                </div>
-                <Button variant="outline" size="lg" fullWidth onClick={startGoogleSignIn} disabled={isSubmitting}>
-                    <FcGoogle className="h-5 w-5" />
-                    Continue with Google
-                </Button>
             </form>
         </AuthLayout>
     );

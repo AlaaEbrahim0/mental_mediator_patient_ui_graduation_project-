@@ -20,8 +20,9 @@ React 18 + Create React App (`react-scripts` 5.0.1) SPA. Tailwind CSS 3 + DaisyU
 - Shared design system: https://github.com/AlaaEbrahim0/nexus-shared-ui (**vendored**, see below)
 - Git branch: **`master`** (the default branch and the drift workflow's `on.push` filter
   both point at `master`, matching `doctor-ui`)
-- This portal is the **patient** half of the platform. Sign-in is email/password **and
-  Google OAuth** (the doctor portal is password-only).
+- This portal is the **patient** half of the platform. Sign-in is email/password only,
+  same as the doctor portal. (Google OAuth was removed: the API's external-login flow
+  never worked end to end, so the button was a dead end.)
 
 ## Commands
 
@@ -55,8 +56,6 @@ src/routes/ProtectedRoute.js token + `user` role check; falls back to persisted 
 src/auth/
   authProvider.js            VENDORED — session state, chunked expiry timers, `auth:expired`
   session.js                 VENDORED — localStorage key `nexus_auth_session`, getToken/saveSession/clearSession
-  externalSession.js         LOCAL — Google handoff: reads ?temporaryToken=…, exchanges it, writes the session
-  ExternalLoginGate.js       LOCAL — parent of <Routes/>; blocks first render until the handoff resolves
   login.js register.js forgotPassword.js resetPassword.js logout.js
 src/api/
   client.js                  VENDORED — axios instance, base-URL trim, JWT request interceptor, 401 -> `auth:expired`, RFC 7807 message helpers
@@ -164,7 +163,7 @@ GitHub, so a push does not build anything. `REACT_APP_*` values are inlined at b
 
 **Vercel preview URLs are intentionally not in the API's CORS allowlist**
 (`api/API/Configurations/DependencyInjection.cs` lists only the two production aliases
-plus localhost). Google sign-in and API calls therefore **fail on preview deployments by
+plus localhost). API calls therefore **fail on preview deployments by
 design**. That is not a bug to chase: verify on `localhost:3000` against the real API, or
 promote the deployment to the production alias.
 
