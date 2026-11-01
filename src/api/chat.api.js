@@ -978,13 +978,18 @@ export function useChatMessages(roomId, enabled = true) {
     }, [commit]);
 
     /**
-     * Mark a pending message as failed so the composer can offer a retry.
+     * Remove a pending optimistic message that failed to send.
+     *
+     * A message rejected by moderation (or lost to a network error) must not
+     * linger in the list as a permanent "not sent" row. It is dropped here and
+     * the composer restores the draft so the sender can fix and retry. Only the
+     * local optimistic copy (negative id) is ever removed; a confirmed server
+     * message is left untouched, and if a send actually did persist, recovery
+     * re-adds it by its clientMessageId.
      */
-    const failMessage = useCallback((clientMessageId) => {
-        commit((previous) => previous.map((message) => (
+    const removeMessage = useCallback((clientMessageId) => {
+        commit((previous) => previous.filter((message) => !(
             message.clientMessageId === clientMessageId && !(message.id > 0)
-                ? { ...message, pending: false, failed: true }
-                : message
         )));
     }, [commit]);
 
@@ -1000,7 +1005,7 @@ export function useChatMessages(roomId, enabled = true) {
         addOptimistic,
         confirmMessage,
         upsertMessage,
-        failMessage,
+        removeMessage,
     };
 }
 

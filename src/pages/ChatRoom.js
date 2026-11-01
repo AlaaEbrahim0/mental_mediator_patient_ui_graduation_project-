@@ -123,7 +123,7 @@ const ChatRoomView = ({ roomId }) => {
         addOptimistic,
         confirmMessage,
         upsertMessage,
-        failMessage,
+        removeMessage,
     } = useChatMessages(roomId, isMember);
 
     const { members, setMembers } = useChatMembers(roomId, isMember);
@@ -497,7 +497,7 @@ const ChatRoomView = ({ roomId }) => {
 
             confirmMessage(persisted);
         } catch (error) {
-            failMessage(optimistic.clientMessageId);
+            removeMessage(optimistic.clientMessageId);
             toast.error(getChatErrorMessage(error, "Your message was not sent."));
             // Let the composer restore the draft so the user does not lose
             // what they typed.
