@@ -55,6 +55,33 @@ export const getMyChatRooms = async () => {
     return memberRooms;
 };
 
+// ---- Room invitations ---------------------------------------------------
+
+/** Non-member accounts a moderator may invite, matched by name. */
+export const getInviteCandidates = (roomId, search) =>
+    request(apiClient.get(`/api/chat/rooms/${roomId}/invite-candidates`, {
+        params: { search: search?.trim() || undefined },
+    }));
+
+export const inviteToRoom = (roomId, userIds) =>
+    request(apiClient.post(`/api/chat/rooms/${roomId}/invitations`, { userIds }));
+
+export const getRoomInvitations = (roomId) =>
+    request(apiClient.get(`/api/chat/rooms/${roomId}/invitations`));
+
+export const cancelRoomInvitation = (roomId, invitationId) =>
+    apiClient.delete(`/api/chat/rooms/${roomId}/invitations/${invitationId}`).then(() => undefined);
+
+/** Invitations waiting on the signed-in user's decision. */
+export const getMyInvitations = () =>
+    request(apiClient.get("/api/chat/invitations/mine"));
+
+export const acceptChatInvitation = (invitationId) =>
+    request(apiClient.post(`/api/chat/invitations/${invitationId}/accept`));
+
+export const declineChatInvitation = (invitationId) =>
+    request(apiClient.post(`/api/chat/invitations/${invitationId}/decline`));
+
 export const createChatRoom = (payload) =>
     request(apiClient.post("/api/chat/rooms", payload));
 

@@ -1,6 +1,6 @@
 {
   "repo": "https://github.com/AlaaEbrahim0/nexus-shared-ui.git",
-  "ref": "f9cbe63312611552dacb7e80f4c621208dbdad0b",
+  "ref": "c5412340feedfbf2c3cfe80e27fdc6574860399f",
   "version": "0.1.0",
   "files": [
     "src/api/client.js",
@@ -39,6 +39,8 @@
     "src/utils/moderationState.js",
     "src/utils/postComposerConfig.js",
     "src/utils/utcToRelativeTime.js",
-    "tailwind.config.js"
+    "tailwind.config.js",
+    "src/components/chat/RoomInviteModal.js",
+    "src/components/chat/RoomInvitationList.js"
   ]
 }

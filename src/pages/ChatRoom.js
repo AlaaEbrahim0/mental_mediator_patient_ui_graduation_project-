@@ -10,6 +10,7 @@ import {
     FiPlayCircle,
     FiShield,
     FiSettings,
+    FiUserPlus,
     FiUsers,
 } from "react-icons/fi";
 import toast from "react-hot-toast";
@@ -28,11 +29,14 @@ import { ReportMessageModal } from "../components/chat/ReportMessageModal";
 import { RoomMembersPanel } from "../components/chat/RoomMembersPanel";
 import { RoomReportsPanel } from "../components/chat/RoomReportsPanel";
 import { RoomSettingsModal } from "../components/chat/RoomSettingsModal";
+import { RoomInviteModal } from "../components/chat/RoomInviteModal";
 import { JoinRoomModal } from "../components/ui/community";
 import { useChatHub } from "../hooks/useChatHub";
 import { useRefreshOnFocus } from "../hooks/useRefreshOnFocus";
 import {
     getChatErrorMessage,
+    getInviteCandidates,
+    inviteToRoom,
     markChatRoomRead,
     clearChatRoomPassphrase,
     getChatRoom,
@@ -143,6 +147,7 @@ const ChatRoomView = ({ roomId }) => {
     const [isLockBusy, setIsLockBusy] = useState(false);
     const [showReports, setShowReports] = useState(false);
     const [isSettingsOpen, setSettingsOpen] = useState(false);
+    const [isInviteOpen, setInviteOpen] = useState(false);
     const [busyMessageId, setBusyMessageId] = useState(null);
     const [isSending, setIsSending] = useState(false);
 
@@ -651,6 +656,16 @@ const ChatRoomView = ({ roomId }) => {
                             </Button>
                         )}
 
+                        {canModerate && !isArchived && (
+                            <Button
+                                variant="outline"
+                                onClick={() => setInviteOpen(true)}
+                            >
+                                <FiUserPlus aria-hidden="true" />
+                                Invite
+                            </Button>
+                        )}
+
                         {canModerate && (
                             <Button
                                 variant="outline"
@@ -891,6 +906,13 @@ const ChatRoomView = ({ roomId }) => {
                 </aside>
             </div>
 
+            <RoomInviteModal
+                isOpen={isInviteOpen}
+                onClose={() => setInviteOpen(false)}
+                roomName={room?.name}
+                search={(term) => getInviteCandidates(roomId, term)}
+                invite={(userIds) => inviteToRoom(roomId, userIds)}
+            />
             <RoomSettingsModal
                 isOpen={isSettingsOpen}
                 room={room}

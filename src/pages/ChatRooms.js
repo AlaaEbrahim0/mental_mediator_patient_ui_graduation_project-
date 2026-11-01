@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiHash, FiPlus, FiSearch } from "react-icons/fi";
 import toast from "react-hot-toast";
 import {
@@ -18,7 +19,15 @@ import {
     filterRooms,
 } from "../components/ui/community";
 import { CreateRoomModal } from "../components/chat/CreateRoomModal";
-import { getChatErrorMessage, useChatRooms, useJoinChatRoom } from "../api/chat.api";
+import { RoomInvitationList } from "../components/chat/RoomInvitationList";
+import {
+    acceptChatInvitation,
+    declineChatInvitation,
+    getChatErrorMessage,
+    getMyInvitations,
+    useChatRooms,
+    useJoinChatRoom,
+} from "../api/chat.api";
 
 const SKELETON_KEYS = [0, 1, 2, 3, 4, 5];
 
@@ -63,6 +72,33 @@ export const ChatRooms = () => {
         await load().catch(() => undefined);
     };
 
+    const [invitations, setInvitations] = useState([]);
+    const [areInvitationsLoading, setInvitationsLoading] = useState(true);
+    const navigate = useNavigate();
+
+    const loadInvitations = useCallback(() => {
+        getMyInvitations()
+            .then((result) => setInvitations(Array.isArray(result) ? result : []))
+            .catch(() => setInvitations([]))
+            .finally(() => setInvitationsLoading(false));
+    }, []);
+
+    useEffect(() => {
+        loadInvitations();
+    }, [loadInvitations]);
+
+    const handleAcceptInvitation = async (invitation) => {
+        await acceptChatInvitation(invitation.id);
+        toast.success(`You joined ${invitation.roomName || "the room"}.`);
+        loadInvitations();
+        navigate("/community/rooms/" + invitation.roomId);
+    };
+
+    const handleDeclineInvitation = async (invitation) => {
+        await declineChatInvitation(invitation.id);
+        setInvitations((previous) => previous.filter((item) => item.id !== invitation.id));
+    };
+
     return (
         <div className="w-full">
             <section className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -78,6 +114,15 @@ export const ChatRooms = () => {
                     Create room
                 </Button>
             </section>
+
+            <div className="mb-5">
+                <RoomInvitationList
+                    invitations={invitations}
+                    isLoading={areInvitationsLoading}
+                    onAccept={handleAcceptInvitation}
+                    onDecline={handleDeclineInvitation}
+                />
+            </div>
 
             <section
                 className="mb-5 flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-base-100 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-4"

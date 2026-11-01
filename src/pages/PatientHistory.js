@@ -7,14 +7,17 @@ import { Alert, Button } from "../components/ui";
 export const PatientHistory = () => {
     const [history, setHistory] = useState(null);
     const [pageNumber, setPageNumber] = useState(1);
+    const [category, setCategory] = useState("all");
+    const [dateFrom, setDateFrom] = useState("");
+    const [dateTo, setDateTo] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
 
-    const load = useCallback(async (page = 1) => {
+    const load = useCallback(async (page = 1, activeCategory = category, from = dateFrom, to = dateTo) => {
         setIsLoading(true);
         setError("");
         try {
-            const result = await getMyHistory(page, 20);
+            const result = await getMyHistory(page, 20, { category: activeCategory, from, to });
             setHistory(result);
             setPageNumber(page);
         } catch (requestError) {
@@ -22,11 +25,14 @@ export const PatientHistory = () => {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [category, dateFrom, dateTo]);
 
     useEffect(() => {
         load(1);
-    }, [load]);
+        // Re-runs only when the filters themselves change; page turns go
+        // through the explicit load(page) calls from the timeline.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [category, dateFrom, dateTo]);
 
     return (
         <div className="mx-auto w-full max-w-4xl space-y-6">
@@ -54,6 +60,14 @@ export const PatientHistory = () => {
                 error={error ? new Error(error) : null}
                 onRetry={() => load(pageNumber)}
                 onPageChange={load}
+                category={category}
+                onCategoryChange={setCategory}
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+                onDateChange={({ from, to }) => {
+                    setDateFrom(from);
+                    setDateTo(to);
+                }}
             />
         </div>
     );

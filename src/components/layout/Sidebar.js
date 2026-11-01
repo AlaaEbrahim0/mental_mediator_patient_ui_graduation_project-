@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { MdOutlineSpaceDashboard } from "react-icons/md";
 import { BiMessageSquareDetail } from "react-icons/bi";
-import { FiCalendar, FiSearch, FiSettings, FiBell, FiClock } from "react-icons/fi";
+import { FiCalendar, FiHash, FiSearch, FiSettings, FiBell, FiClock } from "react-icons/fi";
 import { HiOutlineLogin } from "react-icons/hi";
 import { NavLink } from "react-router-dom";
 import { IoIosClose } from "react-icons/io";
 import { useUserProfile } from "../../context/profileContext";
+import { getMyChatRooms } from "../../api/chat.api";
 import { motion } from "framer-motion";
 
 const imagesDir = process.env.REACT_APP_IMAGE_BASE_URL;
@@ -16,6 +17,19 @@ export function Sidebar({ isOpen, setIsOpen }) {
     const iconStyles = "inline shrink-0 text-2xl";
 
     const { userProfileData, isLoading } = useUserProfile();
+    const [rooms, setRooms] = useState([]);
+
+    useEffect(() => {
+        let active = true;
+        getMyChatRooms()
+            .then((result) => {
+                if (active) setRooms(Array.isArray(result) ? result.slice(0, 6) : []);
+            })
+            .catch(() => {
+                if (active) setRooms([]);
+            });
+        return () => { active = false; };
+    }, [userProfileData?.id]);
 
     const menuItems = useMemo(
         () => [
@@ -169,6 +183,39 @@ export function Sidebar({ isOpen, setIsOpen }) {
                     ))}
                 </ul>
             </nav>
+
+            <div className="mt-3 shrink-0 px-2">
+                <div className="mb-2 flex items-center justify-between px-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Rooms</p>
+                    <NavLink to="/community/rooms" onClick={handleMenuItemClick} tabIndex={isMobile && !isOpen ? -1 : undefined} className="text-[11px] font-semibold text-primary-800 hover:underline">
+                        View all
+                    </NavLink>
+                </div>
+                {rooms.length === 0 ? (
+                    <p className="px-3 pb-2 text-xs leading-5 text-neutral-500">Rooms you join will appear here.</p>
+                ) : (
+                    <ul className="flex flex-col gap-1">
+                        {rooms.map((room) => (
+                            <li key={room.id} className="list-none">
+                                <NavLink
+                                    to={`/community/rooms/${room.id}`}
+                                    onClick={handleMenuItemClick}
+                                    tabIndex={isMobile && !isOpen ? -1 : undefined}
+                                    className={({ isActive }) => `group relative flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 ${isActive ? "bg-primary-50 font-semibold text-primary-900" : "text-neutral-700 hover:bg-neutral-100"}`}
+                                >
+                                    <FiHash aria-hidden="true" className="shrink-0 text-neutral-500 group-hover:text-neutral-800" />
+                                    <span className="min-w-0 flex-1 truncate">{room.name}</span>
+                                    {Number(room.unreadCount) > 0 && (
+                                        <span className="inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-error px-1.5 text-[11px] font-bold leading-5 text-white" aria-label={`${room.unreadCount} unread`}>
+                                            {room.unreadCount > 99 ? "99+" : room.unreadCount}
+                                        </span>
+                                    )}
+                                </NavLink>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
 
             <div className="mt-auto shrink-0 border-t border-neutral-200 p-2">
                 <NavLink

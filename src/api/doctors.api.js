@@ -16,9 +16,15 @@ export const getDoctors = async (filters = {}, pageNumber = 1, pageSize = PAGE_S
     if (filters.specialization) params.specialization = filters.specialization;
     if (filters.gender) params.gender = filters.gender;
     if (filters.city?.trim()) params.city = filters.city.trim();
+    if (filters.minFees !== "" && filters.minFees != null) params.minFees = filters.minFees;
     if (filters.maxFees !== "" && filters.maxFees != null) params.maxFees = filters.maxFees;
-    const { data } = await apiClient.get("/api/doctors", { params });
-    return Array.isArray(data) ? data : [];
+    if (filters.isAvailable === true || filters.isAvailable === false) {
+        params.isAvailable = filters.isAvailable;
+    }
+    const response = await apiClient.get("/api/doctors", { params });
+    const items = Array.isArray(response.data) ? response.data : [];
+    const total = Number(response.headers?.["x-total-count"]);
+    return { items, total: Number.isFinite(total) ? total : undefined };
 };
 
 export const getDoctor = async (doctorId) => {

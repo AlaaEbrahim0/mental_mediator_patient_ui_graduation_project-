@@ -16,6 +16,7 @@ const toForm = (profile) => ({
     phoneNumber: profile?.phoneNumber || "",
     city: profile?.city || "",
     biography: profile?.biography || "",
+    isProfilePublic: Boolean(profile?.isProfilePublic),
 });
 
 export const Profile = () => {
@@ -121,6 +122,29 @@ export const Profile = () => {
                         <Input label="City" autoComplete="address-level2" value={values.city} onChange={change("city")} />
                     </div>
                     <Textarea label="About you" rows={4} maxLength={1000} value={values.biography} onChange={change("biography")} hint="Optional. Shown on your community posts." />
+                    <fieldset className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+                        <legend className="px-1 text-sm font-bold text-neutral-900">Profile visibility</legend>
+                        <label className="flex cursor-pointer items-start gap-3">
+                            <input
+                                type="checkbox"
+                                role="switch"
+                                className="toggle toggle-primary mt-0.5"
+                                name="isProfilePublic"
+                                checked={values.isProfilePublic}
+                                onChange={(event) => setValues((previous) => ({ ...previous, isProfilePublic: event.target.checked }))}
+                            />
+                            <span>
+                                <span className="block text-sm font-semibold text-neutral-900">
+                                    {values.isProfilePublic ? "Public profile" : "Private profile"}
+                                </span>
+                                <span className="mt-0.5 block text-sm leading-6 text-neutral-600">
+                                    {values.isProfilePublic
+                                        ? "Anyone with your profile link can see your name, photo and about text. Your contact details, appointments and health history stay private."
+                                        : "Only you and the doctors you have an appointment with can view your profile. Your profile link shows a private notice to everyone else."}
+                                </span>
+                            </span>
+                        </label>
+                    </fieldset>
                     <div className="flex justify-end">
                         <Button type="submit" loading={updateLoading} loadingText="Saving…">Save changes</Button>
                     </div>
