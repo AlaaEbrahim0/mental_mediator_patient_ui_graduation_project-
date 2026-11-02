@@ -32,6 +32,19 @@ in `.shared-ui.json`.
 - **Horizontal scroll on 320px phones.** The Rooms showcase grid could inflate
   past the viewport via grid children's automatic minimum size; pinned with
   `min-w-0` on both columns.
+- **Booking day strip did not scroll.** `fieldset`'s UA default
+  `min-width: min-content` sized the day row to its chips (752px inside a
+  616px card), so `overflow-x-auto` had nothing to scroll and later days were
+  clipped. Fixed with `min-w-0` on the fieldset and `minmax(0,…)` on the
+  landing fr grids; a right-edge fade marks the strip scrollable past five
+  open days.
+- **Live numbers jittered at zero.** `CountUp` rebuilt its match array every
+  render, re-triggering its own effect in an infinite loop; memoised and the
+  animation now runs once on view.
+- **Community band overflowed the showcase.** Capped at five threads per
+  filter (the badge still reports the true total) and seeded posts with photos
+  now show their first image as a thumbnail. Hero photo chips appear from md
+  up.
 
 ### Added
 
