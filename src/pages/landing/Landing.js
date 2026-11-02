@@ -18,8 +18,7 @@ import { CommunityFeed } from "./CommunityFeed";
 import { BookingDemo } from "./BookingDemo";
 import { RoomsShowcase } from "./RoomsShowcase";
 import { COMMUNITY_STATS } from "./landingData";
-
-const imagesDir = process.env.REACT_APP_IMAGE_BASE_URL || "/images";
+import { AnatomyFigure, CommunityMotif, FeaturesMotif, HeroFigure } from "../../components/figures/Figures";
 
 /**
  * Hero entrance props. Under reduced motion the element starts in its final
@@ -291,13 +290,8 @@ export const Landing = () => {
                         >
                             <OrbitRings className="-left-10 -top-10 hidden lg:block" size={340} />
                             <Tilt3D className="relative rounded-[2rem]" intensity={8} lift={12}>
-                                <div className="relative overflow-hidden rounded-[2rem] border border-neutral-200 bg-gradient-to-br from-primary-50 via-base-100 to-primary-100/60 p-2 shadow-2xl shadow-primary-900/10">
-                                    <img
-                                        src={`${imagesDir}/loginPhoto.png`}
-                                        alt=""
-                                        className="h-full w-full rounded-[1.6rem] object-contain"
-                                        loading="eager"
-                                    />
+                                <div className="relative overflow-hidden rounded-[2rem] border border-neutral-200 bg-gradient-to-br from-primary-50 via-base-100 to-primary-100/60 p-6 shadow-2xl shadow-primary-900/10">
+                                    <HeroFigure className="mx-auto h-auto w-full max-w-sm" />
                                 </div>
                             </Tilt3D>
 
@@ -333,17 +327,20 @@ export const Landing = () => {
                 {/* ---------------- Features ---------------- */}
                 <section id="features" className="scroll-mt-20 border-t border-neutral-200 bg-base-100 py-20">
                     <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-                        <Reveal className="max-w-2xl">
-                            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary-700">
-                                What you get
-                            </p>
-                            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-                                Everything for your care, in one place
-                            </h2>
-                            <p className="mt-4 text-lg leading-relaxed text-neutral-600">
-                                Booking, messaging and community were built together rather than
-                                bolted on, so nothing feels like an afterthought.
-                            </p>
+                        <Reveal className="flex max-w-4xl flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="max-w-2xl">
+                                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary-700">
+                                    What you get
+                                </p>
+                                <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+                                    Everything for your care, in one place
+                                </h2>
+                                <p className="mt-4 text-lg leading-relaxed text-neutral-600">
+                                    Booking, messaging and community were built together rather than
+                                    bolted on, so nothing feels like an afterthought.
+                                </p>
+                            </div>
+                            <FeaturesMotif className="hidden w-32 shrink-0 sm:block" />
                         </Reveal>
 
                         <motion.div
@@ -467,8 +464,12 @@ export const Landing = () => {
                 </section>
 
                 {/* ---------------- Community band ---------------- */}
-                <section id="community" className="scroll-mt-20 bg-[#0f172a] py-20 text-white">
-                    <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
+                <section id="community" className="relative scroll-mt-20 overflow-hidden bg-[#0f172a] py-20 text-white">
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+                        <CommunityMotif className="absolute -bottom-28 -left-28 w-[440px] opacity-25" />
+                        <CommunityMotif className="absolute -right-32 -top-32 w-[380px] opacity-15" />
+                    </div>
+                    <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
                         <Reveal>
                             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary-300">
                                 Community
@@ -526,6 +527,10 @@ export const Landing = () => {
                                 Health conversations deserve real boundaries. These are enforced in the
                                 product, not just promised on a page.
                             </p>
+                        </Reveal>
+
+                        <Reveal delay={0.08}>
+                            <AnatomyFigure className="mx-auto mt-12 w-full max-w-4xl" />
                         </Reveal>
 
                         <div className="mt-12 grid gap-5 md:grid-cols-3">

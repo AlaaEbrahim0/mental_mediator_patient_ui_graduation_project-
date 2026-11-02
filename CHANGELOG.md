@@ -10,7 +10,30 @@ in `.shared-ui.json`.
 
 ## [Unreleased]
 
-Nothing staged. The project is in **feature freeze**.
+### Added
+
+- **Landing artwork.** Hand-drawn SVG figures in `src/components/figures/Figures.js`:
+  a telehealth hero illustration replacing the reused `loginPhoto.png` in the 3D tilt
+  card, a calendar/chat/heart motif beside the Features header, a faint community-node
+  motif behind the dark Community band, and a brain-and-nervous-system diagram in the
+  Safety band. Static SVG — no new keyframes, no vendored file touched — so they
+  respect reduced motion by construction.
+- **Auth shell upgrade.** The `AuthLayout` left panel now carries a navy→primary
+  gradient with a new brain/dendrite line-art figure; applies to sign-in, registration
+  and forgot-password.
+- **Community media previews.** Home dashboard "From the community" cards show up to
+  three attachment thumbnails (videos as a play tile), mirroring the media
+  normalisation in `Post.js`.
+
+### Changed
+
+- `resetPassword.js` now renders through `AuthLayout` instead of its own
+  near-duplicate split shell.
+
+### Docs
+
+- AGENTS.md: dropped the stale `ExternalLoginGate`/`handoffClient` rules (code removed
+  in `711103c`) and corrected the suite count to 5 suites / 59 tests.
 
 ## [0.1.0] - 2026-11-01
 

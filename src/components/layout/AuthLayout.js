@@ -1,15 +1,14 @@
 import { Link } from "react-router-dom";
 import { BsHeartPulseFill } from "react-icons/bs";
 import { CustomToast } from "../ui/CustomToast";
-
-const imagesDir = process.env.REACT_APP_IMAGE_BASE_URL || "/images";
+import { AuthFigure } from "../figures/Figures";
 
 /** Shared split layout for sign in, registration and password pages. */
 export const AuthLayout = ({ eyebrow, title, subtitle, children, footer }) => (
     <>
         <CustomToast />
         <main className="min-h-screen bg-canvas lg:grid lg:grid-cols-2">
-            <section className="relative hidden min-h-screen flex-col justify-between overflow-hidden bg-slate-900 px-10 py-10 text-white lg:flex xl:px-16">
+            <section className="relative hidden min-h-screen flex-col justify-between overflow-hidden bg-gradient-to-br from-navy via-slate-900 to-primary-900 px-10 py-10 text-white lg:flex xl:px-16">
                 <div className="absolute -right-28 top-24 h-96 w-96 rounded-full border border-white/10" />
                 <div className="absolute -right-12 top-40 h-64 w-64 rounded-full border border-white/10" />
                 <Link to="/login" className="relative z-10 flex items-center gap-3">
@@ -24,11 +23,7 @@ export const AuthLayout = ({ eyebrow, title, subtitle, children, footer }) => (
                     <p className="mt-5 max-w-lg text-lg leading-relaxed text-slate-200">
                         Find a mental health professional you trust, book a session in a few taps, and stay connected to a supportive community.
                     </p>
-                    <img
-                        src={`${imagesDir}/loginPhoto.png`}
-                        className="mx-auto mt-8 max-h-[min(38vh,360px)] w-full max-w-md object-contain drop-shadow-2xl"
-                        alt=""
-                    />
+                    <AuthFigure className="mx-auto mt-8 w-64 xl:w-72" />
                 </div>
                 <p className="relative z-10 text-sm text-slate-300">Nexus · Patient portal</p>
             </section>

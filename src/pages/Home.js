@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiArrowRight, FiCalendar, FiMessageCircle } from "react-icons/fi";
+import { FiArrowRight, FiCalendar, FiMessageCircle, FiVideo } from "react-icons/fi";
 import { getUpcomingAppointments } from "../api/appointments.api";
 import { getPosts } from "../api/community.api";
 import { getDoctors } from "../api/doctors.api";
@@ -9,6 +9,21 @@ import { Button, Card, EmptyState, Skeleton } from "../components/ui";
 import { useUserProfile } from "../context/profileContext";
 import { convertUtcToRelativeTime } from "../utils/utcToRelativeTime";
 import { formatDateTime, formatDuration } from "../utils/format";
+
+// Mirrors Post.js normalisation: media list first, legacy single photo as a
+// fallback; only the first three items get a thumbnail on the dashboard card.
+const postMediaPreview = (post) => {
+    const items =
+        Array.isArray(post.media) && post.media.length
+            ? post.media
+            : post.postPhotoUrl
+                ? [{ url: post.postPhotoUrl, type: "image" }]
+                : [];
+    return items
+        .filter((item) => item && typeof item.url === "string" && item.url)
+        .map((item) => ({ url: item.url, type: item.type === "video" ? "video" : "image" }))
+        .slice(0, 3);
+};
 
 // Each block loads independently so one failing endpoint never blanks the dashboard.
 const useLoad = (loader) => {
@@ -118,6 +133,21 @@ export const Home = () => {
                                         <span>{convertUtcToRelativeTime(post.postedOn)}</span>
                                         <span className="inline-flex items-center gap-1"><FiMessageCircle aria-hidden="true" /> {post.commentsCount ?? 0}</span>
                                     </p>
+                                    {postMediaPreview(post).length > 0 && (
+                                        <div aria-hidden="true" className="mt-3 flex gap-2">
+                                            {postMediaPreview(post).map((item) => (
+                                                <span key={item.url} className="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100">
+                                                    {item.type === "video" ? (
+                                                        <span className="grid h-full w-full place-items-center bg-neutral-900 text-white">
+                                                            <FiVideo className="text-lg" />
+                                                        </span>
+                                                    ) : (
+                                                        <img src={item.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                                                    )}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </Card>
                             </li>
                         ))}

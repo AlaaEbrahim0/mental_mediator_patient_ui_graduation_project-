@@ -37,7 +37,7 @@ runs inside `react-scripts build`.
 | `npm run shared-ui:sync` | Copy the pinned `@nexus/shared-ui` files into this portal |
 | `npm run shared-ui:check` | Same script in check mode: exit 1 if any vendored file has drifted from the pin |
 
-Current suite: **6 suites / 75 tests**, all passing with `CI=true npm test`.
+Current suite: **5 suites / 59 tests**, all passing with `CI=true npm test`.
 
 ## Repo map
 
@@ -50,7 +50,7 @@ scripts/shared-ui-sync.mjs   the vendoring tool (Node built-ins + git only, no d
 .github/workflows/shared-ui-drift.yml  CI: runs `npm run shared-ui:check` on push/PR to `master`
 tailwind.config.js           VENDORED — canonical design tokens live upstream
 src/index.js                 ReactDOM.createRoot, StrictMode
-src/App.js                   ThemeProvider > AuthProvider > ExternalLoginGate > UserProfileProvider > NotificationsProvider > Routes
+src/App.js                   ThemeProvider > AuthProvider > UserProfileProvider > NotificationsProvider > Routes
 src/routes/index.js          the single module-scope createBrowserRouter; all routes
 src/routes/ProtectedRoute.js token + `user` role check; falls back to persisted session
 src/auth/
@@ -134,14 +134,6 @@ import { Post, Comment } from "../components/ui/community"; // the react-markdow
   `.env.*.local` are gitignored; `.env.example` is the template. Only `REACT_APP_*` values
   reach the client bundle, and **everything inlined there is public** — put nothing
   sensitive in them.
-- `ExternalLoginGate` must stay a **parent** of `<Routes/>`: the router is built once at
-  module scope, so a sibling cannot navigate, and the gate must decide before the first
-  render or `ProtectedRoute` rewrites `/` and destroys `?temporaryToken=`.
-- The handoff exchange uses its own bare axios (`handoffClient`), **not** `apiClient`, on
-  purpose: `apiClient`'s 401 → `auth:expired` path clears the session the exchange just
-  wrote. Do not "clean that up".
-- Temporary handoff tokens are single-use. `exchangeOnce` de-dupes them so React
-  StrictMode's double mount does not trigger a second call that would 401.
 
 ## Authorization: the .NET API is the source of truth
 
