@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { FiArrowLeft, FiAward, FiClock, FiMapPin } from "react-icons/fi";
-import { getDoctor, getDoctorSchedule } from "../api/doctors.api";
+import { FiArrowLeft, FiAward, FiClock, FiMapPin, FiStar } from "react-icons/fi";
+import {
+    deleteMyDoctorRating,
+    getDoctor,
+    getDoctorRatings,
+    getDoctorSchedule,
+    getMyDoctorRating,
+    saveDoctorRating,
+} from "../api/doctors.api";
 import { getApiErrorMessage } from "../api/client";
 import { Avatar } from "../components/booking/shared";
 import { Alert, Badge, Button, Card, ErrorState, Skeleton, SkeletonText } from "../components/ui";
@@ -28,12 +35,43 @@ const Detail = ({ icon, label, children }) => (
     </div>
 );
 
+const Stars = ({ value, size = "text-sm" }) => (
+    <span className={`inline-flex items-center gap-0.5 ${size}`} aria-label={`${value} out of 5 stars`}>
+        {[1, 2, 3, 4, 5].map((n) => (
+            <FiStar
+                key={n}
+                aria-hidden="true"
+                className={n <= Math.round(value) ? "fill-amber-400 text-amber-500" : "text-neutral-300"}
+            />
+        ))}
+    </span>
+);
+
 export const DoctorDetails = () => {
     const { doctorId } = useParams();
     const [doctor, setDoctor] = useState(null);
     const [schedule, setSchedule] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
+    const [ratings, setRatings] = useState([]);
+    const [myRating, setMyRating] = useState(null);
+    const [stars, setStars] = useState(0);
+    const [comment, setComment] = useState("");
+    const [saving, setSaving] = useState(false);
+    const [ratingError, setRatingError] = useState("");
+
+    const loadRatings = useCallback(async () => {
+        const [recent, mine] = await Promise.all([
+            getDoctorRatings(doctorId).catch(() => []),
+            getMyDoctorRating(doctorId).catch(() => null),
+        ]);
+        setRatings(recent);
+        setMyRating(mine);
+        if (mine) {
+            setStars(mine.stars);
+            setComment(mine.comment || "");
+        }
+    }, [doctorId]);
 
     const load = useCallback(async () => {
         setIsLoading(true);
@@ -46,6 +84,7 @@ export const DoctorDetails = () => {
             ]);
             setDoctor(profile);
             setSchedule(scheduleResult);
+            loadRatings();
         } catch (requestError) {
             setError(
                 requestError.response?.status === 404
@@ -55,7 +94,7 @@ export const DoctorDetails = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [doctorId]);
+    }, [doctorId, loadRatings]);
 
     useEffect(() => {
         load();
@@ -92,6 +131,42 @@ export const DoctorDetails = () => {
     }
 
     const name = fullName(doctor);
+
+    const submitRating = async (event) => {
+        event.preventDefault();
+        if (stars < 1) {
+            setRatingError("Choose a star rating first.");
+            return;
+        }
+        setSaving(true);
+        setRatingError("");
+        try {
+            setMyRating(await saveDoctorRating(doctorId, { stars, comment }));
+            setRatings(await getDoctorRatings(doctorId).catch(() => ratings));
+            setDoctor(await getDoctor(doctorId));
+        } catch (requestError) {
+            setRatingError(getApiErrorMessage(requestError, "We could not save your rating."));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const removeRating = async () => {
+        setSaving(true);
+        setRatingError("");
+        try {
+            await deleteMyDoctorRating(doctorId);
+            setMyRating(null);
+            setStars(0);
+            setComment("");
+            setRatings(await getDoctorRatings(doctorId).catch(() => ratings));
+            setDoctor(await getDoctor(doctorId));
+        } catch (requestError) {
+            setRatingError(getApiErrorMessage(requestError, "We could not remove your rating."));
+        } finally {
+            setSaving(false);
+        }
+    };
     const periodsByDay = WEEKDAYS.map((day) => ({
         day,
         periods: (schedule?.periods || [])
@@ -136,6 +211,75 @@ export const DoctorDetails = () => {
                                 <h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-neutral-500">Qualifications</h3>
                                 <p className="mt-2 whitespace-pre-line text-sm leading-7 text-neutral-700">{doctor.qualifications}</p>
                             </>
+                        )}
+                    </Card>
+
+                    <Card>
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <h2 className="text-lg font-bold text-neutral-900">Patient ratings</h2>
+                            {doctor.ratingCount > 0 && (
+                                <p className="flex items-center gap-2 text-sm font-semibold text-neutral-800">
+                                    <Stars value={doctor.ratingAverage} />
+                                    {Number(doctor.ratingAverage).toFixed(1)}
+                                    <span className="font-normal text-neutral-500">({doctor.ratingCount} {doctor.ratingCount === 1 ? "rating" : "ratings"})</span>
+                                </p>
+                            )}
+                        </div>
+
+                        <form onSubmit={submitRating} className="mt-4 space-y-3">
+                            <div className="flex items-center gap-1" role="radiogroup" aria-label="Your rating">
+                                {[1, 2, 3, 4, 5].map((n) => (
+                                    <button
+                                        key={n}
+                                        type="button"
+                                        role="radio"
+                                        aria-checked={stars === n}
+                                        onClick={() => setStars(n)}
+                                        className="rounded-md p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                                    >
+                                        <FiStar aria-hidden="true" className={`h-5 w-5 ${n <= stars ? "fill-amber-400 text-amber-500" : "text-neutral-400"}`} />
+                                        <span className="sr-only">{n} {n === 1 ? "star" : "stars"}</span>
+                                    </button>
+                                ))}
+                            </div>
+                            <textarea
+                                value={comment}
+                                onChange={(event) => setComment(event.target.value)}
+                                maxLength={1000}
+                                rows={3}
+                                placeholder="Optional: what made the session work for you?"
+                                aria-label="Optional comment"
+                                className="w-full rounded-xl border border-neutral-300 bg-base-100 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                            />
+                            {ratingError && <Alert variant="error">{ratingError}</Alert>}
+                            <div className="flex gap-2">
+                                <Button type="submit" size="sm" disabled={saving}>
+                                    {myRating ? "Update rating" : "Submit rating"}
+                                </Button>
+                                {myRating && (
+                                    <Button type="button" variant="outline" size="sm" disabled={saving} onClick={removeRating}>
+                                        Remove
+                                    </Button>
+                                )}
+                            </div>
+                        </form>
+
+                        {ratings.length > 0 ? (
+                            <ul className="mt-5 space-y-4">
+                                {ratings.map((rating) => (
+                                    <li key={rating.id} className="border-t border-neutral-200 pt-4">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <p className="text-sm font-bold text-neutral-900">{rating.displayName}</p>
+                                            <Stars value={rating.stars} />
+                                        </div>
+                                        {rating.comment && (
+                                            <p className="mt-1.5 text-sm leading-6 text-neutral-700">{rating.comment}</p>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="mt-4 text-sm text-neutral-600">No ratings yet — yours can be the first.</p>
                         )}
                     </Card>
 

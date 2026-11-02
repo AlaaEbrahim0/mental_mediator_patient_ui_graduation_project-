@@ -48,3 +48,33 @@ export const getDoctorSlots = async (doctorId, from, to) => {
     });
     return data;
 };
+
+/** Recent patient ratings for one doctor (max 20, newest first). */
+export const getDoctorRatings = async (doctorId) => {
+    const { data } = await apiClient.get(`/api/doctors/${doctorId}/ratings`);
+    return Array.isArray(data) ? data : [];
+};
+
+/** The signed-in patient's own rating, or null when they have not rated yet. */
+export const getMyDoctorRating = async (doctorId) => {
+    try {
+        const { data } = await apiClient.get(`/api/doctors/${doctorId}/ratings/mine`);
+        return data;
+    } catch (requestError) {
+        if (requestError.response?.status === 404) return null;
+        throw requestError;
+    }
+};
+
+/** Upsert: a second submission edits the existing vote server-side. */
+export const saveDoctorRating = async (doctorId, { stars, comment }) => {
+    const { data } = await apiClient.post(`/api/doctors/${doctorId}/ratings`, {
+        stars,
+        comment: comment?.trim() ? comment.trim() : null,
+    });
+    return data;
+};
+
+export const deleteMyDoctorRating = async (doctorId) => {
+    await apiClient.delete(`/api/doctors/${doctorId}/ratings/mine`);
+};

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { BsHeartPulseFill } from "react-icons/bs";
 import { CustomToast } from "../ui/CustomToast";
 import { AuthFigure } from "../figures/Figures";
+import BrandLogo from "./BrandLogo";
 
 /** Shared split layout for sign in, registration and password pages. */
 export const AuthLayout = ({ eyebrow, title, subtitle, children, footer }) => (
@@ -11,11 +11,8 @@ export const AuthLayout = ({ eyebrow, title, subtitle, children, footer }) => (
             <section className="relative hidden min-h-screen flex-col justify-between overflow-hidden bg-gradient-to-br from-navy via-slate-900 to-primary-900 px-10 py-10 text-white lg:flex xl:px-16">
                 <div className="absolute -right-28 top-24 h-96 w-96 rounded-full border border-white/10" />
                 <div className="absolute -right-12 top-40 h-64 w-64 rounded-full border border-white/10" />
-                <Link to="/login" className="relative z-10 flex items-center gap-3">
-                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 text-xl ring-1 ring-white/20">
-                        <BsHeartPulseFill aria-hidden="true" />
-                    </span>
-                    <span className="text-xl font-bold tracking-wide">Nexus</span>
+                <Link to="/login" className="relative z-10" aria-label="Nexus home">
+                    <BrandLogo size={44} wordmark />
                 </Link>
                 <div className="relative z-10 mx-auto w-full max-w-xl">
                     <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-100">Care, connected</p>
@@ -30,11 +27,8 @@ export const AuthLayout = ({ eyebrow, title, subtitle, children, footer }) => (
 
             <section className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-8 lg:px-8">
                 <div className="w-full max-w-md rounded-3xl border border-neutral-200 bg-base-100 p-6 shadow-xl shadow-slate-900/5 sm:p-9">
-                    <div className="mb-6 flex items-center gap-3 lg:hidden">
-                        <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary text-xl text-white shadow-md shadow-primary/20">
-                            <BsHeartPulseFill aria-hidden="true" />
-                        </span>
-                        <span className="text-sm font-bold uppercase tracking-[0.18em] text-primary">Nexus</span>
+                    <div className="mb-6 lg:hidden">
+                        <BrandLogo size={44} wordmark />
                     </div>
                     <div className="mb-7">
                         {eyebrow && <p className="text-sm font-semibold text-primary">{eyebrow}</p>}

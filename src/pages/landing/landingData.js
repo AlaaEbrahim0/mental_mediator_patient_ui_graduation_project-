@@ -130,6 +130,8 @@ export const CLINICIANS = [
   {
     "id": "00000000-0000-0000-0000-000000000007",
     "name": "Hana Farouk",
+    "rating": 4.0,
+    "ratingCount": 3,
     "speciality": "School psychology",
     "city": "Nasr City, Cairo",
     "fee": 120,
@@ -140,6 +142,8 @@ export const CLINICIANS = [
   {
     "id": "00000000-0000-0000-0000-000000000001",
     "name": "Nadia Rahman",
+    "rating": 4.5,
+    "ratingCount": 4,
     "speciality": "Counselling psychology",
     "city": "Cairo",
     "fee": 150,
@@ -150,6 +154,8 @@ export const CLINICIANS = [
   {
     "id": "00000000-0000-0000-0000-000000000006",
     "name": "Omar El-Sharif",
+    "rating": 4.7,
+    "ratingCount": 3,
     "speciality": "Clinical psychology",
     "city": "Alexandria",
     "fee": 220,
@@ -160,6 +166,8 @@ export const CLINICIANS = [
   {
     "id": "00000000-0000-0000-0000-000000000008",
     "name": "Yusuf Karim",
+    "rating": 4.5,
+    "ratingCount": 2,
     "speciality": "Neuropsychology",
     "city": "Giza",
     "fee": 300,
@@ -170,6 +178,8 @@ export const CLINICIANS = [
   {
     "id": "00000000-0000-0000-0000-000000000009",
     "name": "Salma Aziz",
+    "rating": 4.5,
+    "ratingCount": 2,
     "speciality": "Health psychology",
     "city": "6 October City, Giza",
     "fee": 180,
@@ -183,6 +193,7 @@ export const CLINICIANS = [
 export const ROOMS = [
   {
     "id": 1019,
+    "cover": "https://res.cloudinary.com/dlt0e09e7/image/upload/v1793654610/posts/e2b7ca2e73e2404d9abb5a544095286b.jpg.jpg",
     "name": "New clinicians",
     "description": "",
     "visibility": "Private",
@@ -194,6 +205,7 @@ export const ROOMS = [
   },
   {
     "id": 1018,
+    "cover": "https://res.cloudinary.com/dlt0e09e7/image/upload/v1793654613/posts/3e8c0e318a9f42f39945866529b057f2.jpg.jpg",
     "name": "Sleep and burnout",
     "description": "Night shifts, racing minds and the 3pm wall. Swap what has actually helped you.",
     "visibility": "Public",
@@ -205,6 +217,7 @@ export const ROOMS = [
   },
   {
     "id": 1017,
+    "cover": "https://res.cloudinary.com/dlt0e09e7/image/upload/v1793654606/posts/f8865963a4e6424ab3499c7e84195256.jpg.jpg",
     "name": "Anxiety and panic - peer support",
     "description": "A quiet room for the days when the body says no. Support, not diagnosis. Please keep personal medical details out.",
     "visibility": "Public",

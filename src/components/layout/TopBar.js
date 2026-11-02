@@ -5,6 +5,7 @@ import { useNotifications } from "../../context/notificationsContext";
 import { useUserProfile } from "../../context/profileContext";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import { Notification } from "../ui/Notification";
+import BrandLogo from "./BrandLogo";
 
 const imagesDir = process.env.REACT_APP_IMAGE_BASE_URL;
 
@@ -36,7 +37,7 @@ export const TopBar = ({ title = "Nexus", toggleSidebar, sidebarOpen = false }) 
             </button>
 
             <Link to="/" className="flex shrink-0 items-center gap-2" aria-label="Nexus home">
-                <img src={`${imagesDir}/logo-no-background.png`} alt="Nexus" className="h-9 w-12 object-contain sm:w-14" />
+                <BrandLogo size={34} />
             </Link>
             <span className="hidden h-6 border-l border-neutral-200 lg:block" aria-hidden="true" />
             <h1 className="hidden min-w-0 truncate text-base font-semibold text-neutral-800 lg:block">{title}</h1>

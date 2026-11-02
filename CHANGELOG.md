@@ -10,6 +10,29 @@ in `.shared-ui.json`.
 
 ## [Unreleased]
 
+### Added — 2026-11-02 pass
+
+- **Brand logo.** New inline-SVG `BrandLogo` (heart-pulse + ECG mark on a
+  navy→teal gradient tile) replaces the raster `logo-no-background.png` and the
+  bootstrap heart glyph in `TopBar`, `AuthLayout` and the landing header/footer.
+  Favicon, `logo192/512` and the PWA manifest icons are rendered from the same
+  SVG.
+- **Landing photography.** License-free photos hosted on the project's own
+  Cloudinary: two hero photo chips, room-cover images in the Rooms showcase,
+  and a group-circle accent on the Final CTA.
+- **Landing interactivity.** "What brings you here today?" mood chips scroll to
+  and highlight the matching section; Live numbers count up on view; the hero
+  figure drifts in a gentle loop. All reduced-motion-safe.
+- **Doctor ratings UI.** Average + count badge on doctor cards; a Patient
+  ratings card on `DoctorDetails` with a star picker, optional comment,
+  upsert/remove of the caller's own rating and the recent list.
+
+### Fixed — 2026-11-02 pass
+
+- **Horizontal scroll on 320px phones.** The Rooms showcase grid could inflate
+  past the viewport via grid children's automatic minimum size; pinned with
+  `min-w-0` on both columns.
+
 ### Added
 
 - **Landing artwork.** Hand-drawn SVG figures in `src/components/figures/Figures.js`:

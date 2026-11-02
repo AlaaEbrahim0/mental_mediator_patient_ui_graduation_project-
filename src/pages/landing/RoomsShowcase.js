@@ -40,13 +40,14 @@ export const RoomsShowcase = () => {
 
     return (
         <div className="grid gap-8 lg:grid-cols-[1fr_1.05fr] lg:items-start">
-            {/* Room list */}
+            {/* Room list — min-w-0 keeps grid children from inflating past the
+                viewport via their automatic minimum size on narrow phones */}
             <motion.ul
                 variants={variants.container}
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true, amount: 0.2 }}
-                className="space-y-3"
+                className="min-w-0 space-y-3"
             >
                 {ROOMS.map((room) => {
                     const selected = room.id === active;
@@ -63,7 +64,17 @@ export const RoomsShowcase = () => {
                                 }`}
                             >
                                 <div className="flex items-start justify-between gap-3">
-                                    <h3 className="text-sm font-bold text-neutral-900">{room.name}</h3>
+                                    <div className="flex min-w-0 items-start gap-2.5">
+                                        {room.cover && (
+                                            <img
+                                                src={room.cover}
+                                                alt=""
+                                                loading="lazy"
+                                                className="mt-0.5 h-9 w-12 shrink-0 rounded-lg object-cover"
+                                            />
+                                        )}
+                                        <h3 className="text-sm font-bold text-neutral-900">{room.name}</h3>
+                                    </div>
                                     <span
                                         className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                                             room.visibility === "Public"
@@ -101,8 +112,16 @@ export const RoomsShowcase = () => {
             </motion.ul>
 
             {/* Selected room preview — a tilted 3D chat surface */}
-            <Tilt3D className="rounded-3xl" intensity={7}>
+            <Tilt3D className="min-w-0 rounded-3xl" intensity={7}>
                 <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-base-100 shadow-2xl shadow-slate-900/10">
+                    {activeRoom?.cover && (
+                        <img
+                            src={activeRoom.cover}
+                            alt=""
+                            className="h-28 w-full object-cover"
+                            loading="lazy"
+                        />
+                    )}
                     <div className="flex items-center gap-3 border-b border-neutral-200 bg-canvas px-4 py-3">
                         <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-700 text-white">
                             <BsChatDotsFill aria-hidden="true" />

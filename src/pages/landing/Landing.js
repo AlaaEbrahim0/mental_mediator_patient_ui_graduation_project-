@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import { motion, useInView, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import {
-    BsHeartPulseFill,
     BsShieldCheck,
     BsChatDots,
     BsCalendarCheck,
@@ -11,6 +10,7 @@ import {
     BsLightningCharge,
 } from "react-icons/bs";
 import { FiArrowRight, FiCheck, FiMenu, FiX } from "react-icons/fi";
+import BrandLogo from "../../components/layout/BrandLogo";
 import { Button } from "../../components/ui";
 import { Reveal, useStaggerVariants } from "./Reveal";
 import { Orb3D, OrbitRings, Tilt3D } from "./Depth";
@@ -32,6 +32,58 @@ const heroFade = (reduceMotion, delay = 0) =>
               animate: { opacity: 1, y: 0 },
               transition: { duration: 0.65, delay },
           };
+
+const HERO_PHOTOS = [
+    {
+        url: "https://res.cloudinary.com/dlt0e09e7/image/upload/v1793654602/posts/2e31af54d3d54f3d8bb9c2a3c63e1429.jpg.jpg",
+        alt: "A counselling session in a sunlit room",
+        className: "-right-6 bottom-20 -rotate-3 hidden lg:block",
+    },
+    {
+        url: "https://res.cloudinary.com/dlt0e09e7/image/upload/v1793654605/posts/b9223bd01b784c4793cf56066ba89bd8.jpg.jpg",
+        alt: "A person meditating at sunset",
+        className: "-left-12 top-6 rotate-3 hidden lg:block",
+    },
+];
+
+const MOOD_CHIPS = [
+    { label: "I need support", href: "#community" },
+    { label: "Find a clinician", href: "#booking" },
+    { label: "Join a room", href: "#rooms" },
+    { label: "Privacy matters", href: "#trust" },
+];
+
+const CTA_PHOTO = "https://res.cloudinary.com/dlt0e09e7/image/upload/v1793654614/posts/9eddac69429847aa808645ad38878d17.jpg.jpg";
+
+/**
+ * Counts a stat up from zero when it scrolls into view. Values without a
+ * leading integer ("24/7") render as-is, and reduced motion skips the
+ * animation entirely.
+ */
+const CountUp = ({ value }) => {
+    const reduceMotion = useReducedMotion();
+    const ref = useRef(null);
+    const inView = useInView(ref, { once: true, margin: "-40px" });
+    const match = /^(\d+)(.*)$/.exec(value);
+    const [current, setCurrent] = useState(match && !reduceMotion ? 0 : null);
+
+    useEffect(() => {
+        if (!match || reduceMotion || !inView) return;
+        const target = parseInt(match[1], 10);
+        let frame;
+        let start;
+        const step = (t) => {
+            if (start === undefined) start = t;
+            const p = Math.min((t - start) / 900, 1);
+            setCurrent(Math.round(target * (1 - Math.pow(1 - p, 3))));
+            if (p < 1) frame = requestAnimationFrame(step);
+        };
+        frame = requestAnimationFrame(step);
+        return () => cancelAnimationFrame(frame);
+    }, [inView, reduceMotion, match]);
+
+    return <span ref={ref}>{current === null ? value : `${current}${match ? match[2] : ""}`}</span>;
+};
 
 const NAV_LINKS = [
     { href: "#features", label: "Features" },
@@ -85,6 +137,18 @@ export const Landing = () => {
     const [scrolled, setScrolled] = useState(false);
     const heroRef = useRef(null);
 
+    const highlightSection = (href) => {
+        scrollToId(href, reduceMotion);
+        const el = document.querySelector(href);
+        if (!el) return;
+        el.style.outline = "3px solid rgba(125,211,252,0.65)";
+        el.style.outlineOffset = "-3px";
+        window.setTimeout(() => {
+            el.style.outline = "";
+            el.style.outlineOffset = "";
+        }, 1400);
+    };
+
     // Reading progress bar — a thin brand line across the top.
     const { scrollYProgress } = useScroll();
     const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
@@ -132,11 +196,8 @@ export const Landing = () => {
                 }`}
             >
                 <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-                    <Link to="/" className="flex shrink-0 items-center gap-2.5" aria-label="Nexus home">
-                        <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-700 text-lg text-white shadow-sm">
-                            <BsHeartPulseFill aria-hidden="true" />
-                        </span>
-                        <span className="text-lg font-bold tracking-tight">Nexus</span>
+                    <Link to="/" className="flex shrink-0 items-center" aria-label="Nexus home">
+                        <BrandLogo size={36} wordmark />
                     </Link>
 
                     <nav className="hidden items-center gap-1 md:flex" aria-label="Landing sections">
@@ -278,6 +339,25 @@ export const Landing = () => {
                                     </li>
                                 ))}
                             </motion.ul>
+
+                            <motion.div
+                                {...heroFade(reduceMotion, 0.32)}
+                                className="mt-7"
+                            >
+                                <p className="text-sm font-semibold text-neutral-900">What brings you here today?</p>
+                                <div className="mt-2.5 flex flex-wrap gap-2">
+                                    {MOOD_CHIPS.map((chip) => (
+                                        <button
+                                            key={chip.label}
+                                            type="button"
+                                            onClick={() => highlightSection(chip.href)}
+                                            className="rounded-full border border-primary-200 bg-base-100 px-3.5 py-1.5 text-xs font-semibold text-primary-800 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                                        >
+                                            {chip.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </motion.div>
                         </motion.div>
 
                         {/* Hero artwork */}
@@ -291,9 +371,28 @@ export const Landing = () => {
                             <OrbitRings className="-left-10 -top-10 hidden lg:block" size={340} />
                             <Tilt3D className="relative rounded-[2rem]" intensity={8} lift={12}>
                                 <div className="relative overflow-hidden rounded-[2rem] border border-neutral-200 bg-gradient-to-br from-primary-50 via-base-100 to-primary-100/60 p-6 shadow-2xl shadow-primary-900/10">
-                                    <HeroFigure className="mx-auto h-auto w-full max-w-sm" />
+                                    <motion.div
+                                        animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
+                                        transition={reduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                                    >
+                                        <HeroFigure className="mx-auto h-auto w-full max-w-sm" />
+                                    </motion.div>
                                 </div>
                             </Tilt3D>
+
+                            {/* Real photography chips — desktop garnish only */}
+                            {HERO_PHOTOS.map((photo, index) => (
+                                <motion.img
+                                    key={photo.url}
+                                    src={photo.url}
+                                    alt={photo.alt}
+                                    loading="lazy"
+                                    initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.6, delay: 0.8 + index * 0.15 }}
+                                    className={`absolute ${photo.className} h-24 w-36 rounded-2xl border-4 border-base-100 object-cover shadow-2xl shadow-primary-900/20`}
+                                />
+                            ))}
 
                             {/* Floating stat cards */}
                             <motion.div
@@ -376,7 +475,7 @@ export const Landing = () => {
                             <Reveal key={stat.label} delay={index * 0.08}>
                                 <div>
                                     <p className="text-3xl font-bold tracking-tight text-primary-800 sm:text-4xl">
-                                        {stat.value}
+                                        <CountUp value={stat.value} />
                                     </p>
                                     <p className="mt-1 text-sm font-semibold text-neutral-900">{stat.label}</p>
                                     <p className="text-xs text-neutral-500">{stat.hint}</p>
@@ -553,6 +652,14 @@ export const Landing = () => {
                 <section className="px-4 pb-20 sm:px-6">
                     <Reveal className="mx-auto w-full max-w-6xl">
                         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-700 via-primary-800 to-neutral-900 px-6 py-14 text-center text-white sm:px-12">
+                            <img
+                                src={CTA_PHOTO}
+                                alt=""
+                                aria-hidden="true"
+                                loading="lazy"
+                                className="pointer-events-none absolute inset-y-0 right-0 hidden w-2/5 rounded-l-3xl object-cover opacity-20 sm:block"
+                            />
+                            <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-2/5 bg-gradient-to-l from-neutral-900/70 to-transparent sm:block" aria-hidden="true" />
                             <div
                                 aria-hidden="true"
                                 className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full border border-white/10"
@@ -594,11 +701,8 @@ export const Landing = () => {
 
             <footer className="border-t border-neutral-200 bg-base-100 py-10">
                 <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-6 px-4 sm:px-6 md:flex-row">
-                    <div className="flex items-center gap-2.5">
-                        <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary-700 text-sm text-white">
-                            <BsHeartPulseFill aria-hidden="true" />
-                        </span>
-                        <span className="text-sm font-bold text-neutral-900">Nexus</span>
+                    <div className="flex items-center">
+                        <BrandLogo size={30} wordmark />
                     </div>
                     <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-neutral-600" aria-label="Footer">
                         {NAV_LINKS.map((link) => (

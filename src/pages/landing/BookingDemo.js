@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { FiArrowRight, FiCheck, FiClock, FiMapPin, FiCalendar } from "react-icons/fi";
+import { FiArrowRight, FiCheck, FiClock, FiMapPin, FiStar, FiCalendar } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { AVAILABILITY, CLINICIANS } from "./landingData";
 
@@ -124,6 +124,13 @@ export const BookingDemo = () => {
                                         </span>
                                         <span className="block truncate text-[11px] text-neutral-600">
                                             {item.speciality}
+                                            {item.ratingCount > 0 && (
+                                                <span className="ml-1.5 inline-flex items-center gap-0.5 font-semibold text-neutral-700">
+                                                    <FiStar aria-hidden="true" className="fill-amber-400 text-amber-500" />
+                                                    {item.rating.toFixed(1)}
+                                                    <span className="font-normal text-neutral-500">({item.ratingCount})</span>
+                                                </span>
+                                            )}
                                         </span>
                                     </span>
                                     <span className="shrink-0 text-xs font-semibold text-neutral-700">

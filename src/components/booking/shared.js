@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FiMapPin } from "react-icons/fi";
+import { FiMapPin, FiStar } from "react-icons/fi";
 import { Badge, Button, Card } from "../ui";
 import { formatFee, formatSpecialization, fullName, initialsOf } from "../../utils/format";
 
@@ -43,6 +43,13 @@ export const DoctorCard = ({ doctor }) => {
                         </Link>
                     </h3>
                     <p className="mt-0.5 text-sm font-medium text-primary-800">{formatSpecialization(doctor.specialization)}</p>
+                    {doctor.ratingCount > 0 && (
+                        <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-neutral-800">
+                            <FiStar aria-hidden="true" className="fill-amber-400 text-amber-500" />
+                            {Number(doctor.ratingAverage).toFixed(1)}
+                            <span className="font-normal text-neutral-500">({doctor.ratingCount})</span>
+                        </p>
+                    )}
                     {(doctor.city || doctor.location) && (
                         <p className="mt-1 flex items-center gap-1 text-sm text-neutral-600">
                             <FiMapPin aria-hidden="true" className="shrink-0" />
