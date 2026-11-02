@@ -3,13 +3,8 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, motion, useInView, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import {
     BsShieldCheck,
-    BsChatDots,
-    BsCalendarCheck,
-    BsPeople,
     BsLock,
     BsLightningCharge,
-    BsStarFill,
-    BsThermometerHalf,
 } from "react-icons/bs";
 import { FiArrowRight, FiCheck, FiMenu, FiStar, FiX } from "react-icons/fi";
 import BrandLogo from "../../components/layout/BrandLogo";
@@ -22,6 +17,7 @@ import { RoomsShowcase } from "./RoomsShowcase";
 import HeroCarousel from "./HeroCarousel";
 import FeatureMarquee from "./FeatureMarquee";
 import AnonymityDemo from "./AnonymityDemo";
+import { FEATURES, FeatureCard } from "./FeatureCards";
 import { CLINICIANS, COMMUNITY_STATS } from "./landingData";
 import { AnatomyFigure, CommunityMotif, FeaturesMotif } from "../../components/figures/Figures";
 
@@ -121,39 +117,6 @@ const NAV_LINKS = [
     { href: "#rooms", label: "Rooms" },
     { href: "#community", label: "Community" },
     { href: "#trust", label: "Safety" },
-];
-
-const FEATURES = [
-    {
-        icon: BsCalendarCheck,
-        title: "Book in a few taps",
-        body: "Browse verified professionals, compare availability and confirm a session without a phone call or a waiting room.",
-    },
-    {
-        icon: BsChatDots,
-        title: "Talk when it matters",
-        body: "Message your care team and join moderated group rooms, with real-time delivery and a clear record of the conversation.",
-    },
-    {
-        icon: BsPeople,
-        title: "A community that gets it",
-        body: "Share in moderated forums, follow threads that help you, and stay connected between sessions.",
-    },
-    {
-        icon: BsShieldCheck,
-        title: "Moderated by default",
-        body: "Every post and message is screened before it lands. Harmful content is stopped, not flagged after the fact.",
-    },
-    {
-        icon: BsThermometerHalf,
-        title: "Check in with yourself",
-        body: "Private questionnaires score your week and track the trend over time — visible only to you and your clinician.",
-    },
-    {
-        icon: BsStarFill,
-        title: "Rated by patients",
-        body: "Verified patients score sessions one to five. Averages are computed server-side and shown on every profile.",
-    },
 ];
 
 const TRUST_POINTS = [
@@ -481,20 +444,8 @@ export const Landing = () => {
                             viewport={{ once: true, amount: 0.2 }}
                             className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
                         >
-                            {FEATURES.map(({ icon: Icon, title, body }) => (
-                                <motion.article
-                                    key={title}
-                                    variants={featureVariants.item}
-                                    whileHover={reduceMotion ? undefined : { y: -6 }}
-                                    transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                                    className="group rounded-2xl border border-neutral-200 bg-base-100 p-6 shadow-sm transition-shadow hover:shadow-xl hover:shadow-primary-900/5"
-                                >
-                                    <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary-50 text-xl text-primary-700 transition-colors group-hover:bg-primary-700 group-hover:text-white">
-                                        <Icon aria-hidden="true" />
-                                    </span>
-                                    <h3 className="mt-4 text-base font-bold text-neutral-900">{title}</h3>
-                                    <p className="mt-2 text-sm leading-relaxed text-neutral-600">{body}</p>
-                                </motion.article>
+                            {FEATURES.map((item) => (
+                                <FeatureCard key={item.title} item={item} variants={featureVariants} />
                             ))}
                         </motion.div>
                     </div>

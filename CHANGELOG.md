@@ -10,6 +10,14 @@ in `.shared-ui.json`.
 
 ## [Unreleased]
 
+### Changed — premium feature cards (2026-11-03)
+
+- The flat bordered cards became gradient-framed surfaces: a 1px frame that
+  lights in the card's accent hue on hover, a cursor-following spotlight, a
+  corner bloom, glowing gradient icon tiles with a spring lift, and a mono
+  trust badge naming the mechanism behind each claim (SignalR, fail-closed
+  ML, PBKDF2-style server rules). Component in `FeatureCards.js`.
+
 ### Added — platform hero (2026-11-03)
 
 - **Hero carousel.** The booking mock left the hero (it repeats two
