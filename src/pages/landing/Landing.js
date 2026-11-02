@@ -366,7 +366,7 @@ export const Landing = () => {
                             initial={{ opacity: 0, scale: 0.96 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                            className="relative mx-auto w-full max-w-md lg:max-w-none"
+                            className="relative mx-auto w-full min-w-0 max-w-md lg:max-w-none"
                         >
                             <OrbitRings className="-left-10 -top-10 hidden lg:block" size={340} />
                             <Tilt3D className="relative rounded-[2rem]" intensity={8} lift={12}>
@@ -502,10 +502,10 @@ export const Landing = () => {
                         </Reveal>
 
                         <div className="mt-10 grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-                            <Reveal>
+                            <Reveal className="min-w-0">
                                 <BookingDemo />
                             </Reveal>
-                            <Reveal delay={0.12} className="lg:pt-4">
+                            <Reveal delay={0.12} className="min-w-0 lg:pt-4">
                                 <h3 className="text-lg font-bold text-neutral-900">Why it works this way</h3>
                                 <ul className="mt-4 space-y-4">
                                     {[
@@ -569,7 +569,7 @@ export const Landing = () => {
                         <CommunityMotif className="absolute -right-32 -top-32 w-[380px] opacity-15" />
                     </div>
                     <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
-                        <Reveal>
+                        <Reveal className="min-w-0">
                             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary-300">
                                 Community
                             </p>
@@ -606,7 +606,7 @@ export const Landing = () => {
                         </Reveal>
 
                         {/* Live community feed — real posts from the API */}
-                        <Reveal delay={0.15}>
+                        <Reveal delay={0.15} className="min-w-0">
                             <CommunityFeed />
                         </Reveal>
                     </div>
