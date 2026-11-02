@@ -90,8 +90,8 @@ export const CommunityFeed = () => {
         () => (category === "All" ? posts : posts.filter((post) => post.category === category)),
         [posts, category]
     );
-    // The band is a showcase, not the forum: five threads is plenty.
-    const visible = useMemo(() => filtered.slice(0, 5), [filtered]);
+    // The band is a showcase, not the forum: three threads per category.
+    const visible = useMemo(() => filtered.slice(0, 3), [filtered]);
 
     return (
         <div>

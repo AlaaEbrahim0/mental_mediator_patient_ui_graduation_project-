@@ -9,7 +9,7 @@ import {
     BsLock,
     BsLightningCharge,
 } from "react-icons/bs";
-import { FiArrowRight, FiCheck, FiMenu, FiX } from "react-icons/fi";
+import { FiArrowRight, FiCheck, FiMenu, FiStar, FiX } from "react-icons/fi";
 import BrandLogo from "../../components/layout/BrandLogo";
 import { Button } from "../../components/ui";
 import { Reveal, useStaggerVariants } from "./Reveal";
@@ -17,8 +17,8 @@ import { Orb3D, OrbitRings, Tilt3D } from "./Depth";
 import { CommunityFeed } from "./CommunityFeed";
 import { BookingDemo } from "./BookingDemo";
 import { RoomsShowcase } from "./RoomsShowcase";
-import { COMMUNITY_STATS } from "./landingData";
-import { AnatomyFigure, CommunityMotif, FeaturesMotif, HeroFigure } from "../../components/figures/Figures";
+import { AVAILABILITY, CLINICIANS, COMMUNITY_STATS } from "./landingData";
+import { AnatomyFigure, CommunityMotif, FeaturesMotif } from "../../components/figures/Figures";
 
 /**
  * Hero entrance props. Under reduced motion the element starts in its final
@@ -37,12 +37,7 @@ const HERO_PHOTOS = [
     {
         url: "https://res.cloudinary.com/dlt0e09e7/image/upload/v1793654602/posts/2e31af54d3d54f3d8bb9c2a3c63e1429.jpg.jpg",
         alt: "A counselling session in a sunlit room",
-        className: "-right-4 bottom-16 -rotate-3 hidden md:block",
-    },
-    {
-        url: "https://res.cloudinary.com/dlt0e09e7/image/upload/v1793654605/posts/b9223bd01b784c4793cf56066ba89bd8.jpg.jpg",
-        alt: "A person meditating at sunset",
-        className: "-left-8 top-4 rotate-3 hidden md:block",
+        className: "-right-10 -top-8 rotate-6 hidden lg:block",
     },
 ];
 
@@ -54,6 +49,23 @@ const MOOD_CHIPS = [
 ];
 
 const CTA_PHOTO = "https://res.cloudinary.com/dlt0e09e7/image/upload/v1793654614/posts/9eddac69429847aa808645ad38878d17.jpg.jpg";
+
+/* Hero app-preview mock: one clinician's real availability, rendered static. */
+const HERO_DOCTOR = CLINICIANS.find((c) => c.id === "00000000-0000-0000-0000-000000000001") ?? CLINICIANS[0];
+const HERO_DAYS = (AVAILABILITY[HERO_DOCTOR.id]?.days ?? []).slice(0, 4);
+const HERO_TIMES = (HERO_DAYS[0]?.times ?? []).slice(0, 4);
+const HERO_DURATION = AVAILABILITY[HERO_DOCTOR.id]?.duration ?? 45;
+const dayChip = (iso) => {
+    const date = new Date(`${iso}T00:00:00Z`);
+    return {
+        weekday: date.toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" }),
+        day: date.toLocaleDateString("en-GB", { day: "numeric", timeZone: "UTC" }),
+    };
+};
+const RATING_TOTAL = CLINICIANS.reduce((sum, c) => sum + (c.ratingCount || 0), 0);
+const RATING_AVERAGE = RATING_TOTAL
+    ? CLINICIANS.reduce((sum, c) => sum + c.rating * c.ratingCount, 0) / RATING_TOTAL
+    : 0;
 
 /**
  * Counts a stat up from zero when it scrolls into view. Values without a
@@ -341,7 +353,40 @@ export const Landing = () => {
                             </motion.ul>
 
                             <motion.div
-                                {...heroFade(reduceMotion, 0.32)}
+                                {...heroFade(reduceMotion, 0.3)}
+                                className="mt-7 flex flex-wrap items-center gap-4 border-t border-neutral-200/80 pt-6"
+                            >
+                                <div className="flex -space-x-3" aria-hidden="true">
+                                    {CLINICIANS.slice(0, 5).map((doctor) => (
+                                        <img
+                                            key={doctor.id}
+                                            src={doctor.photo}
+                                            alt=""
+                                            loading="lazy"
+                                            className="h-9 w-9 rounded-full border-2 border-base-100 object-cover shadow-sm"
+                                        />
+                                    ))}
+                                </div>
+                                <div>
+                                    <p className="flex items-center gap-1.5 text-sm font-bold text-neutral-900">
+                                        <span className="flex items-center gap-0.5" aria-hidden="true">
+                                            {[1, 2, 3, 4, 5].map((n) => (
+                                                <FiStar
+                                                    key={n}
+                                                    className={`h-3.5 w-3.5 ${n <= Math.round(RATING_AVERAGE) ? "fill-amber-400 text-amber-500" : "text-neutral-300"}`}
+                                                />
+                                            ))}
+                                        </span>
+                                        {RATING_AVERAGE.toFixed(1)} average
+                                    </p>
+                                    <p className="mt-0.5 text-xs text-neutral-500">
+                                        from {RATING_TOTAL} patient ratings across {CLINICIANS.length} verified clinicians
+                                    </p>
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                {...heroFade(reduceMotion, 0.38)}
                                 className="mt-7"
                             >
                                 <p className="text-sm font-semibold text-neutral-900">What brings you here today?</p>
@@ -370,13 +415,92 @@ export const Landing = () => {
                         >
                             <OrbitRings className="-left-10 -top-10 hidden lg:block" size={340} />
                             <Tilt3D className="relative rounded-[2rem]" intensity={8} lift={12}>
-                                <div className="relative overflow-hidden rounded-[2rem] border border-neutral-200 bg-gradient-to-br from-primary-50 via-base-100 to-primary-100/60 p-6 shadow-2xl shadow-primary-900/10">
-                                    <motion.div
-                                        animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
-                                        transition={reduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                                    >
-                                        <HeroFigure className="mx-auto h-auto w-full max-w-sm" />
-                                    </motion.div>
+                                <div className="overflow-hidden rounded-[2rem] border border-neutral-200 bg-base-100 shadow-2xl shadow-primary-900/15">
+                                    <div className="flex items-center gap-2.5 border-b border-neutral-200 bg-canvas px-4 py-3">
+                                        <span className="flex gap-1.5" aria-hidden="true">
+                                            <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
+                                            <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
+                                            <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
+                                        </span>
+                                        <p className="ml-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+                                            Nexus · book a session
+                                        </p>
+                                    </div>
+                                    <div className="space-y-4 p-5 sm:p-6">
+                                        <div className="flex items-center gap-3">
+                                            <img
+                                                src={HERO_DOCTOR.photo}
+                                                alt=""
+                                                className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-primary-100"
+                                            />
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-bold text-neutral-900">
+                                                    Dr. {HERO_DOCTOR.name}
+                                                </p>
+                                                <p className="truncate text-xs text-neutral-500">{HERO_DOCTOR.speciality}</p>
+                                            </div>
+                                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 ring-1 ring-amber-200">
+                                                <FiStar aria-hidden="true" className="fill-amber-400 text-amber-500" />
+                                                {HERO_DOCTOR.rating.toFixed(1)}
+                                            </span>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-400">
+                                                Open days
+                                            </p>
+                                            <div className="mt-2 flex gap-2">
+                                                {HERO_DAYS.map((item, index) => {
+                                                    const { weekday, day } = dayChip(item.date);
+                                                    const selected = index === 1;
+                                                    return (
+                                                        <span
+                                                            key={item.date}
+                                                            className={`flex-1 rounded-xl border px-1 py-2 text-center ${
+                                                                selected
+                                                                    ? "border-primary-600 bg-primary-700 text-white shadow-md shadow-primary-900/20"
+                                                                    : "border-neutral-200 bg-base-100 text-neutral-700"
+                                                            }`}
+                                                        >
+                                                            <span className="block text-[9px] font-semibold uppercase tracking-wide opacity-70">{weekday}</span>
+                                                            <span className="block text-base font-bold leading-tight">{day}</span>
+                                                        </span>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-400">
+                                                Available times
+                                            </p>
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                {HERO_TIMES.map((slot, index) => (
+                                                    <span
+                                                        key={slot}
+                                                        className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold ${
+                                                            index === 2
+                                                                ? "bg-primary-700 text-white shadow-sm"
+                                                                : "bg-neutral-100 text-neutral-700"
+                                                        }`}
+                                                    >
+                                                        {slot}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between gap-3 rounded-2xl bg-primary-50/70 px-4 py-3 ring-1 ring-primary-100">
+                                            <div>
+                                                <p className="text-[11px] text-neutral-500">{HERO_DURATION}-minute session</p>
+                                                <p className="text-sm font-bold text-neutral-900">{HERO_DOCTOR.fee} EGP</p>
+                                            </div>
+                                            <span className="inline-flex items-center gap-1.5 rounded-xl bg-primary-700 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-primary-900/20">
+                                                <FiCheck aria-hidden="true" />
+                                                Confirm booking
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </Tilt3D>
 
@@ -390,35 +514,9 @@ export const Landing = () => {
                                     initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.6, delay: 0.8 + index * 0.15 }}
-                                    className={`absolute ${photo.className} h-24 w-36 rounded-2xl border-4 border-base-100 object-cover shadow-2xl shadow-primary-900/20`}
+                                    className={`absolute ${photo.className} h-20 w-28 rounded-2xl border-4 border-base-100 object-cover shadow-2xl shadow-primary-900/20`}
                                 />
                             ))}
-
-                            {/* Floating stat cards */}
-                            <motion.div
-                                initial={{ opacity: 0, x: -20, y: 10 }}
-                                animate={{ opacity: 1, x: 0, y: 0 }}
-                                transition={{ duration: 0.6, delay: 0.6 }}
-                                className="absolute -left-3 bottom-8 hidden rounded-2xl border border-neutral-200 bg-base-100 px-4 py-3 shadow-xl sm:block"
-                            >
-                                <p className="text-xs font-medium text-neutral-600">Live threads</p>
-                                <p className="text-lg font-bold text-neutral-900">{COMMUNITY_STATS[0].value}</p>
-                            </motion.div>
-
-                            <motion.div
-                                initial={{ opacity: 0, x: 20, y: -10 }}
-                                animate={{ opacity: 1, x: 0, y: 0 }}
-                                transition={{ duration: 0.6, delay: 0.72 }}
-                                className="absolute -right-2 top-8 hidden items-center gap-2 rounded-2xl border border-neutral-200 bg-base-100 px-4 py-3 shadow-xl sm:flex"
-                            >
-                                <span className="grid h-8 w-8 place-items-center rounded-full bg-success-100 text-success-700">
-                                    <BsShieldCheck aria-hidden="true" />
-                                </span>
-                                <div>
-                                    <p className="text-xs font-medium text-neutral-600">Moderation</p>
-                                    <p className="text-sm font-bold text-neutral-900">Always on</p>
-                                </div>
-                            </motion.div>
                         </motion.div>
                     </div>
                 </section>

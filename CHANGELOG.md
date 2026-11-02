@@ -10,6 +10,17 @@ in `.shared-ui.json`.
 
 ## [Unreleased]
 
+### Added — hero redesign (2026-11-03)
+
+- **Product-forward hero.** The line-art card is replaced by an app-preview
+  mock — a window-framed booking screen (clinician row with rating badge,
+  open-day chips, time slots, fee summary and confirm button) built from the
+  same availability data the booking demo uses, tilted in 3D with one photo
+  chip over the corner. A social-proof row (clinician avatars, 4.4 average
+  from 14 patient ratings) sits under the checklist; the overlapping floating
+  stat cards and the second photo chip were removed.
+- **Community band** now shows three threads per category.
+
 ### Added — 2026-11-02 pass
 
 - **Brand logo.** New inline-SVG `BrandLogo` (heart-pulse + ECG mark on a
