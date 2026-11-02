@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useInView, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import {
@@ -37,12 +37,12 @@ const HERO_PHOTOS = [
     {
         url: "https://res.cloudinary.com/dlt0e09e7/image/upload/v1793654602/posts/2e31af54d3d54f3d8bb9c2a3c63e1429.jpg.jpg",
         alt: "A counselling session in a sunlit room",
-        className: "-right-6 bottom-20 -rotate-3 hidden lg:block",
+        className: "-right-4 bottom-16 -rotate-3 hidden md:block",
     },
     {
         url: "https://res.cloudinary.com/dlt0e09e7/image/upload/v1793654605/posts/b9223bd01b784c4793cf56066ba89bd8.jpg.jpg",
         alt: "A person meditating at sunset",
-        className: "-left-12 top-6 rotate-3 hidden lg:block",
+        className: "-left-8 top-4 rotate-3 hidden md:block",
     },
 ];
 
@@ -64,8 +64,8 @@ const CountUp = ({ value }) => {
     const reduceMotion = useReducedMotion();
     const ref = useRef(null);
     const inView = useInView(ref, { once: true, margin: "-40px" });
-    const match = /^(\d+)(.*)$/.exec(value);
-    const [current, setCurrent] = useState(match && !reduceMotion ? 0 : null);
+    const match = useMemo(() => /^(\d+)(.*)$/.exec(value), [value]);
+    const [current, setCurrent] = useState(null);
 
     useEffect(() => {
         if (!match || reduceMotion || !inView) return;
@@ -273,7 +273,7 @@ export const Landing = () => {
                         <Orb3D className="bottom-0 left-1/3" size={300} hue="rose" duration={24} delay={1} />
                     </div>
 
-                    <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:pb-28 lg:pt-20">
+                    <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pb-20 pt-14 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:pb-28 lg:pt-20">
                         <motion.div style={{ opacity: heroOpacity }}>
                             <motion.p
                                 {...heroFade(reduceMotion, 0)}
@@ -501,7 +501,7 @@ export const Landing = () => {
                             </p>
                         </Reveal>
 
-                        <div className="mt-10 grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+                        <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start">
                             <Reveal className="min-w-0">
                                 <BookingDemo />
                             </Reveal>

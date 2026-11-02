@@ -142,13 +142,16 @@ export const BookingDemo = () => {
                     </div>
                 </fieldset>
 
-                {/* Step 2 — day, only for the chosen clinician's real availability */}
-                <fieldset className="mt-5">
+                {/* Step 2 — day, only for the chosen clinician's real availability.
+                    min-w-0 overrides the fieldset UA min-width:min-content, which
+                    otherwise sizes the strip to its days and defeats the scroll. */}
+                <fieldset className="mt-5 min-w-0">
                     <legend className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-500">
                         2 · Pick an open day
                     </legend>
-                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                        {days.map((item) => {
+                    <div className="relative mt-3">
+                        <div className="flex gap-2 overflow-x-auto pb-1 overscroll-x-contain">
+                            {days.map((item) => {
                             const selected = item.date === date;
                             const { weekday, day, month } = shortDate(item.date);
                             return (
@@ -175,6 +178,13 @@ export const BookingDemo = () => {
                             <p className="text-sm text-neutral-500">
                                 This clinician has no open days in the demo window.
                             </p>
+                        )}
+                        </div>
+                        {days.length > 5 && (
+                            <div
+                                aria-hidden="true"
+                                className="pointer-events-none absolute inset-y-0 right-0 w-10 rounded-r-xl bg-gradient-to-l from-base-100 to-transparent"
+                            />
                         )}
                     </div>
                 </fieldset>

@@ -39,7 +39,7 @@ export const RoomsShowcase = () => {
     const activeRoom = ROOMS.find((room) => room.id === active) || ROOMS[0];
 
     return (
-        <div className="grid gap-8 lg:grid-cols-[1fr_1.05fr] lg:items-start">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start">
             {/* Room list — min-w-0 keeps grid children from inflating past the
                 viewport via their automatic minimum size on narrow phones */}
             <motion.ul

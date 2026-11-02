@@ -35,6 +35,12 @@ const normalise = (post) => ({
     likes: post.likes ?? post.likesCount ?? 0,
     comments: post.comments ?? post.commentsCount ?? 0,
     ago: post.ago || "",
+    media:
+        Array.isArray(post.media) && post.media.length
+            ? post.media.filter((item) => item && item.url)
+            : post.postPhotoUrl
+                ? [{ url: post.postPhotoUrl, type: "image" }]
+                : [],
 });
 
 /**
@@ -80,10 +86,12 @@ export const CommunityFeed = () => {
         };
     }, []);
 
-    const visible = useMemo(
+    const filtered = useMemo(
         () => (category === "All" ? posts : posts.filter((post) => post.category === category)),
         [posts, category]
     );
+    // The band is a showcase, not the forum: five threads is plenty.
+    const visible = useMemo(() => filtered.slice(0, 5), [filtered]);
 
     return (
         <div>
@@ -102,7 +110,7 @@ export const CommunityFeed = () => {
                     )}
                     {source === "live" ? "Live from the community" : "Recent activity"}
                 </span>
-                <span className="text-xs text-slate-400">{visible.length} threads</span>
+                <span className="text-xs text-slate-400">{filtered.length} threads</span>
             </div>
 
             {/* Category filters — real categories from the data, not invented ones. */}
@@ -148,7 +156,17 @@ export const CommunityFeed = () => {
                                 </span>
                                 {post.ago && <span className="text-[11px] text-slate-400">{post.ago}</span>}
                             </div>
-                            <h3 className="mt-2 text-sm font-semibold leading-snug text-white">{post.title}</h3>
+                            <div className="mt-2 flex items-start gap-3">
+                                <h3 className="flex-1 text-sm font-semibold leading-snug text-white">{post.title}</h3>
+                                {post.media.some((item) => item.type === "image") && (
+                                    <img
+                                        src={post.media.find((item) => item.type === "image").url}
+                                        alt=""
+                                        loading="lazy"
+                                        className="h-16 w-20 shrink-0 rounded-lg object-cover ring-1 ring-white/10"
+                                    />
+                                )}
+                            </div>
                             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-400">
                                 <span className="truncate">{post.author}</span>
                                 <span className="inline-flex items-center gap-1">
