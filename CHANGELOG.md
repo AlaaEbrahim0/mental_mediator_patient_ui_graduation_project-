@@ -10,6 +10,21 @@ in `.shared-ui.json`.
 
 ## [Unreleased]
 
+### Added — platform hero (2026-11-03)
+
+- **Hero carousel.** The booking mock left the hero (it repeats two
+  scrolls down) and a product tour cycles four surfaces in one window
+  frame — community post with photo, live room with animated typing,
+  appointment confirmation, private check-in with trend ring — auto-
+  advancing, pausing on hover, with clickable dots.
+- **Rotating slogans** under the headline ("For the 3am thoughts." …).
+- **Feature marquee** under the hero: two infinite opposite-direction
+  rows naming twelve platform capabilities.
+- **Anonymity interactive demo** between the community band and Safety:
+  a switch morphs a post's author between Anonymous and a named member.
+- **Two more feature cards** (private check-ins, patient ratings); the
+  grid rebalanced to three columns.
+
 ### Added — hero redesign (2026-11-03)
 
 - **Product-forward hero.** The line-art card is replaced by an app-preview
