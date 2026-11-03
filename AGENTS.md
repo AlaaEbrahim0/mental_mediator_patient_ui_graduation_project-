@@ -44,7 +44,7 @@ Current suite: **5 suites / 59 tests**, all passing with `CI=true npm test`.
 ```
 package.json                 scripts + dependencies (no lint script)
 vercel.json                  SPA rewrite: every non-asset path -> /index.html
-.shared-ui.json              the pin: upstream repo URL, commit `ref`, and the 45 vendored files
+.shared-ui.json              the pin: upstream repo URL, commit `ref`, and the 48 vendored files
 scripts/shared-ui-sync.mjs   the vendoring tool (Node built-ins + git only, no deps)
 .env / .env.example          REACT_APP_API_URL, REACT_APP_IMAGE_BASE_URL (gitignored)
 .github/workflows/shared-ui-drift.yml  CI: runs `npm run shared-ui:check` on push/PR to `master`
@@ -79,15 +79,15 @@ src/pages/                   LOCAL — Home, Doctors, DoctorDetails, BookAppoint
                              Forums, ForumsDetails, ChatRooms, ChatRoom
 ```
 
-The authoritative vendored list is the `files` array in `.shared-ui.json` (45 entries).
+The authoritative vendored list is the `files` array in `.shared-ui.json` (48 entries).
 When in doubt about whether a file is shared, check that array — do not guess.
 
 ## The vendored shared-ui rule (hard)
 
 `@nexus/shared-ui` is **not an npm package**. It is not in `node_modules` and is not
 resolved at build time. Each portal keeps a byte-for-byte copy of the upstream files at
-a commit pinned in `.shared-ui.json` (`ref: f082cb5d2f2d45de0b38f43fbea2cc9de9f7d1fd`
-right now, in sync: `In sync with @nexus/shared-ui@f082cb5 (45 files)`).
+a commit pinned in `.shared-ui.json` (`ref: c7c4ebf5d58af2d3631e2870b8c96bbaeb7a5bf1`
+right now, in sync: `In sync with @nexus/shared-ui@c7c4ebf (48 files)`).
 
 **NEVER edit a file that appears in `.shared-ui.json`'s `files` list.** Not to fix a bug,
 not to tweak a class name, not to "just add one prop". Those copies are overwritten by the

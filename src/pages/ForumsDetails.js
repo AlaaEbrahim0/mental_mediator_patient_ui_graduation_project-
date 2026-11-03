@@ -86,6 +86,8 @@ export const ForumsDetails = () => {
                     commentCount={post.commentsCount}
                     likesCount={post.likesCount}
                     isLikedByCurrentUser={post.isLikedByCurrentUser}
+                    reactions={post.reactions}
+                    myReaction={post.myReaction}
                     data={post}
                     setData={async () => {
                         setData(await execute(post.id));

@@ -40,7 +40,9 @@ import {
     markChatRoomRead,
     clearChatRoomPassphrase,
     getChatRoom,
+    removeChatMessageReaction,
     removeChatRoomCover,
+    setChatMessageReaction,
     setChatRoomPassphrase,
     updateChatRoom,
     updateChatRoomPrivacy,
@@ -124,6 +126,7 @@ const ChatRoomView = ({ roomId }) => {
         confirmMessage,
         upsertMessage,
         removeMessage,
+        applyReactionUpdate,
     } = useChatMessages(roomId, isMember);
 
     const { members, setMembers } = useChatMembers(roomId, isMember);
@@ -275,6 +278,12 @@ const ChatRoomView = ({ roomId }) => {
         },
         onMessageDeleted: (message) => {
             upsertMessage(message);
+        },
+        onMessageReactionsUpdated: (update) => {
+            // The broadcast is neutral: it carries who reacted, not what each
+            // viewer reacted, so the local "my reaction" only moves when the
+            // actor is this user.
+            applyReactionUpdate(update, room?.myMemberId);
         },
         onMemberUpdated: (member) => {
             setMembers((previous) => upsertChatMember(previous, member));
@@ -520,6 +529,31 @@ const ChatRoomView = ({ roomId }) => {
             setBusyMessageId(null);
         }
     };
+
+    const submitReaction = async (message, request, fallback) => {
+        setBusyMessageId(message.id);
+
+        try {
+            const updated = await request();
+            upsertMessage(updated);
+        } catch (error) {
+            toast.error(getChatErrorMessage(error, fallback));
+        } finally {
+            setBusyMessageId(null);
+        }
+    };
+
+    const handleReact = (message, reaction) => submitReaction(
+        message,
+        () => setChatMessageReaction(message.id, reaction),
+        "Your reaction was not saved.",
+    );
+
+    const handleRemoveReaction = (message) => submitReaction(
+        message,
+        () => removeChatMessageReaction(message.id),
+        "Your reaction could not be removed.",
+    );
 
     const handleReported = () => {
         setReportTarget(null);
@@ -793,6 +827,8 @@ const ChatRoomView = ({ roomId }) => {
                                                     isBusy={busyMessageId === message.id}
                                                     onDelete={handleDelete}
                                                     onReport={setReportTarget}
+                                                    onReact={handleReact}
+                                                    onRemoveReaction={handleRemoveReaction}
                                                 />
                                             ))}
                                         </div>

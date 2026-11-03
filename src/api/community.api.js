@@ -95,13 +95,27 @@ export const uploadPostMedia = (file, onUploadProgress) => {
 };
 export const deletePost = (id) => unwrap(apiClient.delete(`/api/posts/${id}`));
 export const setPostLike = (id, liked) => unwrap(liked ? apiClient.put(`/api/posts/${id}/like`) : apiClient.delete(`/api/posts/${id}/like`));
+
+// Reactions replaced the single like, but the like endpoints stay wired to the
+// API so older clients keep working while the portals move over.
+export const setPostReaction = (id, reaction) => unwrap(apiClient.put(`/api/posts/${id}/reactions`, { reaction }));
+export const removePostReaction = (id) => unwrap(apiClient.delete(`/api/posts/${id}/reactions`));
+export const setCommentReaction = (postId, commentId, reaction) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}/reactions`, { reaction }));
+export const removeCommentReaction = (postId, commentId) => unwrap(apiClient.delete(`/api/posts/${postId}/comments/${commentId}/reactions`));
+export const setReplyReaction = (postId, commentId, replyId, reaction) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}/reactions`, { reaction }));
+export const removeReplyReaction = (postId, commentId, replyId) => unwrap(apiClient.delete(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}/reactions`));
+
+// A comment or reply can be text-only, media-only, or both, so callers may pass
+// either the bare text or the full request payload.
+const toContentPayload = (value) => (typeof value === "string" ? { content: value } : value);
+
 export const getComments = (postId) => unwrap(apiClient.get(`/api/posts/${postId}/comments`));
-export const createComment = (postId, content) => unwrap(apiClient.post(`/api/posts/${postId}/comments`, { content }, moderation));
-export const updateComment = (postId, commentId, content) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}`, { content }, moderation));
+export const createComment = (postId, payload) => unwrap(apiClient.post(`/api/posts/${postId}/comments`, toContentPayload(payload), moderation));
+export const updateComment = (postId, commentId, payload) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}`, toContentPayload(payload), moderation));
 export const deleteComment = (postId, commentId) => unwrap(apiClient.delete(`/api/posts/${postId}/comments/${commentId}`));
 export const getReplies = (postId, commentId) => unwrap(apiClient.get(`/api/posts/${postId}/comments/${commentId}/replies`));
-export const createReply = (postId, commentId, content) => unwrap(apiClient.post(`/api/posts/${postId}/comments/${commentId}/replies`, { content }, moderation));
-export const updateReply = (postId, commentId, replyId, content) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, { content }, moderation));
+export const createReply = (postId, commentId, payload) => unwrap(apiClient.post(`/api/posts/${postId}/comments/${commentId}/replies`, toContentPayload(payload), moderation));
+export const updateReply = (postId, commentId, replyId, payload) => unwrap(apiClient.put(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, toContentPayload(payload), moderation));
 export const deleteReply = (postId, commentId, replyId) => unwrap(apiClient.delete(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`));
 export const getNewsArticles = () => unwrap(apiClient.get("/api/articles"));
 
