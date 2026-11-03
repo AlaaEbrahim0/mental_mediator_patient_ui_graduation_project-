@@ -86,8 +86,8 @@ When in doubt about whether a file is shared, check that array — do not guess.
 
 `@nexus/shared-ui` is **not an npm package**. It is not in `node_modules` and is not
 resolved at build time. Each portal keeps a byte-for-byte copy of the upstream files at
-a commit pinned in `.shared-ui.json` (`ref: c7c4ebf5d58af2d3631e2870b8c96bbaeb7a5bf1`
-right now, in sync: `In sync with @nexus/shared-ui@c7c4ebf (48 files)`).
+a commit pinned in `.shared-ui.json` (`ref: 5446bd2ae8b0649efb2497cd80d982cff1d7c3e9`
+right now, in sync: `In sync with @nexus/shared-ui@5446bd2 (48 files)`).
 
 **NEVER edit a file that appears in `.shared-ui.json`'s `files` list.** Not to fix a bug,
 not to tweak a class name, not to "just add one prop". Those copies are overwritten by the
